@@ -1,0 +1,41 @@
+{
+	type: "neo-apoli:modify/item/use",
+	on_use_action: [
+		{
+			type: "neo-apoli:damage_entity",
+			damage_type: "*:hurt_by_water",
+			amount: 2.0,
+			victim: "this"
+		},
+		{
+			type: "neo-apoli:trigger_power_cooldown",
+			power: "*:water_vulnerability@cooldown",
+			entity: "this"
+		}
+	],
+	trigger_type: "during",
+	active_condition: {
+		type: "neo-apoli:all_of",
+		conditions: [
+			{
+				type: "neo-apoli:item_matches_ingredient",
+				ingredient: "minecraft:potion",
+				item: "used_item"
+			},
+			{
+				type: "neo-apoli:compare",
+				comparison: {
+					type: "neo-apoli:float",
+					comparator: "==",
+					first: {
+						type: "neo-apoli:power/cooldown/progress",
+						power: "*:water_vulnerability@cooldown",
+						entity: "this"
+					},
+					second: 1.0
+				}
+			}
+		]
+	},
+	hidden: true
+}

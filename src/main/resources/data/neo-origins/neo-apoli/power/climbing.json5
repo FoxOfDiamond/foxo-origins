@@ -1,0 +1,101 @@
+{
+	type: "neo-apoli:multiple",
+	toggle: {
+		type: "neo-apoli:toggle",
+		action: {
+			type: "neo-apoli:execute_command",
+			source: {
+				type: "neo-apoli:entity",
+				entity: "this"
+			},
+			command: {
+				type: "neo-apoli:join",
+				strings: [
+					"title @s actionbar",
+					{
+						type: "neo-apoli:conditional",
+						condition: {
+							type: "neo-apoli:entity_has_active_power",
+							power: "*:*@toggle",
+							entity: "this"
+						},
+						on_true: "{\"translate\": \"power.neo-origins.climbing.enabled\", \"color\": \"green\", \"fallback\": \"Climbing is enabled!\"}",
+						on_false: "{\"translate\": \"power.neo-origins.climbing.disabled\", \"color\": \"red\", \"fallback\": \"Climbing is disabled!\"}"
+					}
+				],
+				separator: " "
+			}
+		},
+		key: "key.loadToolbarActivator"
+	},
+	run: {
+		type: "neo-apoli:modify/climbing",
+		active_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:entity_has_active_power",
+					power: "*:*@toggle",
+					entity: "this"
+				},
+				{
+					type: "neo-apoli:any_of",
+					conditions: [
+						{
+							type: "neo-apoli:all_of",
+							conditions: [
+								{
+									type: "neo-apoli:inverted",
+									condition: {
+										type: "neo-apoli:is_entity_sneaking",
+										entity: "this"
+									}
+								},
+								{
+									type: "neo-apoli:is_entity_horizontally_colliding",
+									entity: "this"
+								}
+							]
+						},
+						{
+							type: "neo-apoli:all_of",
+							conditions: [
+								{
+									type: "neo-apoli:is_entity_sneaking",
+									entity: "this"
+								},
+								{
+									type: "neo-apoli:compare",
+									comparison: {
+										type: "neo-apoli:int",
+										comparator: ">=",
+										first: {
+											type: "neo-apoli:blocks_colliding_box",
+											condition: true,
+											box: {
+												type: "neo-apoli:offset",
+												box: {
+													type: "neo-apoli:entity/bounds",
+													entity: "this"
+												},
+												offset: [
+													-0.01,
+													0.00,
+													-0.01,
+													0.01,
+													0.00,
+													0.01
+												]
+											}
+										},
+										second: 1
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}

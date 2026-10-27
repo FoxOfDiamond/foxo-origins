@@ -1,0 +1,14 @@
+{
+	type: "neo-apoli:modify/damage/dealt",
+	modifiers: [
+		{
+			type: "neo-apoli:add",
+			phase: "base",
+			amount: 3
+		}
+	],
+	active_condition: {
+		type: "neo-apoli:is_entity_on_fire",
+		entity: "this"
+	}
+}

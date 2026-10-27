@@ -1,0 +1,8 @@
+{
+	type: "neo-apoli:modify/effect/immunity",
+	active_condition: {
+		type: "neo-apoli:is_effect_in_tag",
+		tag: "#*:*",
+		effect: "applied_effect"
+	}
+}

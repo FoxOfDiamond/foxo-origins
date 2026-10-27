@@ -1,0 +1,17 @@
+{
+	"type": "neo-apoli:compare",
+	"comparison": {
+		"type": "neo-apoli:float",
+		"comparator": ">",
+		"first": {
+			"type": "neo-apoli:round",
+			"value": {
+				"type": "neo-apoli:entity/fluid_height",
+				"fluid_tag": "#minecraft:water",
+				"entity": "this"
+			},
+			"places": 2
+		},
+		"second": 0.0
+	}
+}

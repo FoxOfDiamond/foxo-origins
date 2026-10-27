@@ -1,0 +1,35 @@
+{
+	type: "neo-apoli:modify/damage/dealt",
+	modifiers: [
+		{
+			type: "neo-apoli:multiply_multiplicative",
+			phase: "base",
+			amount: {
+				type: "neo-apoli:round",
+				value: {
+					type: "neo-apoli:clamped",
+					value: {
+						type: "neo-apoli:product",
+						values: [
+							{
+								type: "neo-apoli:vector/length",
+								vector: {
+									type: "neo-apoli:entity/velocity",
+									entity: "this"
+								}
+							},
+							0.9
+						]
+					},
+					min: 0.0,
+					max: 1.0
+				},
+				places: 2
+			}
+		}
+	],
+	active_condition: {
+		type: "neo-apoli:is_entity_fall_flying",
+		entity: "this"
+	}
+}

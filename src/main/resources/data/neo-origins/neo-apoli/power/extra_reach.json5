@@ -1,0 +1,17 @@
+{
+	"type": "neo-apoli:modify/attribute/vanilla",
+	"modifiers": [
+		{
+			"id": "neo-origins:extra_reach",
+			"attribute": "minecraft:block_interaction_range",
+			"amount": 1.5,
+			"operation": "add_value"
+		},
+		{
+			"id": "neo-origins:extra_reach",
+			"attribute": "minecraft:entity_interaction_range",
+			"amount": 1.5,
+			"operation": "add_value"
+		}
+	]
+}

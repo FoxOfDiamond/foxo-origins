@@ -1,0 +1,109 @@
+{
+	type: "neo-apoli:multiple",
+	cooldown: {
+		type: "neo-apoli:cooldown",
+		hud_element: {
+			type: "neo-apoli:resource_bar",
+			sprite_location: {
+				background: "neo-apoli:resource_bar/7/background",
+				fill: "neo-apoli:resource_bar/7/fill",
+				icon: "neo-apoli:resource_bar/7/icon"
+			}
+		},
+		cooldown: 30
+	},
+	shoot: {
+		type: "neo-apoli:callback/power/tick",
+		rising_action: [
+			{
+				type: "neo-apoli:shoot_entity",
+				entity_type: "minecraft:ender_pearl",
+				position: {
+					type: "neo-apoli:entity/position",
+					entity: "this",
+					anchor: "eyes"
+				},
+				direction: {
+					type: "neo-apoli:entity/view",
+					entity: "this"
+				},
+				velocity: 1.5,
+				inaccuracy: 1.0,
+				shooter: "this"
+			},
+			{
+				type: "neo-apoli:trigger_power_cooldown",
+				power: "*:*@cooldown",
+				entity: "this"
+			},
+			{
+				type: "neo-apoli:execute_command",
+				source: {
+					type: "neo-apoli:entity",
+					entity: "this"
+				},
+				command: {
+					type: "neo-apoli:join",
+					strings: [
+						"playsound minecraft:entity.ender_pearl.throw neutral @a ~ ~ ~ 0.5",
+						{
+							type: "neo-apoli:from_float",
+							value: {
+								type: "neo-apoli:round",
+								value: {
+									type: "neo-apoli:quotient",
+									dividend: 0.4,
+									divisor: {
+										type: "neo-apoli:sum",
+										values: [
+											{
+												type: "neo-apoli:random/uniform",
+												min: 0.0,
+												max: 1.0
+											},
+											0.4
+										]
+									}
+								},
+								places: 1
+							}
+						}
+					],
+					separator: " "
+				}
+			}
+		],
+		interval: 0,
+		active_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:float",
+						comparator: "==",
+						first: {
+							type: "neo-apoli:power/cooldown/progress",
+							power: "*:*@cooldown",
+							entity: "this"
+						},
+						second: 1.0
+					}
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:int",
+						comparator: "==",
+						first: {
+							type: "neo-apoli:key/pressed_ticks",
+							id: "key.saveToolbarActivator",
+							entity: "this"
+						},
+						second: 1
+					}
+				}
+			]
+		}
+	}
+}

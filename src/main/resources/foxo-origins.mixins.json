@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "syrena.foxo_origins.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "impl.EntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+	}
+}

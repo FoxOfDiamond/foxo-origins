@@ -1,0 +1,13 @@
+{
+	"death.attack.neo-origins.hurt_by_water": "%s took a bath for too long",
+	"death.attack.neo-origins.hurt_by_water.player": "%s was put underwater by %s",
+	"enchantment.neo-origins.water_protection": "Water Protection",
+	"power.neo-origins.carnivore.warning": "You cannot eat non-meat foodstuffs!",
+	"power.neo-origins.climbing.disabled": "Climbing is disabled!",
+	"power.neo-origins.climbing.enabled": "Climbing is enabled!",
+	"power.neo-origins.no_shield.warning": "You cannot use shields!",
+	"power.neo-origins.pumpkin_hate.warning": "You cannot eat foodstuffs that are pumpkin-like!",
+	"power.neo-origins.shulk_inventory.container_title": "Shulk Inventory",
+	"power.neo-origins.vegetarian.warning": "You cannot eat meat foodstuffs!",
+	"power.neo-origins:fresh_air.prevented_sleep": "You need to get higher up in order to sleep!"
+}

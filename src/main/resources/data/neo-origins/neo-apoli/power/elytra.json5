@@ -1,0 +1,16 @@
+{
+	type: "neo-apoli:multiple",
+	capability: {
+		type: "neo-apoli:modify/elytra/flight",
+		allow: true
+	},
+	renderer: {
+		type: "neo-apoli:modify/elytra/render",
+		asset_id: "minecraft:elytra",
+		active_condition: {
+			type: "neo-apoli:entity_has_power",
+			power: "*:*@capability",
+			entity: "this"
+		}
+	}
+}

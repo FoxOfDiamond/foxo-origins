@@ -1,0 +1,22 @@
+{
+	type: "neo-apoli:callback/player/wake_up",
+	action: [
+		{
+			type: "neo-apoli:give_items",
+			stacks: [
+				{
+					id: "minecraft:egg"
+				}
+			],
+			entity: "this"
+		},
+		{
+			type: "neo-apoli:execute_command",
+			source: {
+				type: "neo-apoli:entity",
+				entity: "this"
+			},
+			command: "/playsound minecraft:entity.chicken.egg"
+		}
+	]
+}

@@ -1,0 +1,83 @@
+{
+	"type": "neo-apoli:all_of",
+	"conditions": [
+		{
+			"type": "neo-apoli:reference",
+			"value": "*:entity/is_exposed_to_sky"
+		},
+		{
+			"type": "neo-apoli:inverted",
+			"condition": {
+				"type": "neo-apoli:any_of",
+				"conditions": [
+					{
+						"type": "neo-apoli:reference",
+						"value": "*:entity/is_rained_on"
+					},
+					{
+						"type": "neo-apoli:reference",
+						"value": "*:entity/is_in_water"
+					}
+				]
+			}
+		},
+		{
+			"type": "neo-apoli:any_of",
+			"conditions": [
+				{
+					"type": "neo-apoli:compare",
+					"comparison": {
+						"type": "neo-apoli:float",
+						"comparator": ">=",
+						"first": {
+							"type": "neo-apoli:brightness",
+							"position": {
+								"type": "neo-apoli:entity/position",
+								"entity": "this"
+							}
+						},
+						"second": 0.5
+					}
+				},
+				{
+					"type": "neo-apoli:compare",
+					"comparison": {
+						"type": "neo-apoli:float",
+						"comparator": ">=",
+						"first": {
+							"type": "neo-apoli:brightness",
+							"position": {
+								"type": "neo-apoli:dynamic",
+								"x": {
+									"type": "neo-apoli:vector/component",
+									"vector": {
+										"type": "neo-apoli:entity/position",
+										"entity": "this"
+									},
+									"axis": "x"
+								},
+								"y": {
+									"type": "neo-apoli:box/component",
+									"box": {
+										"type": "neo-apoli:entity/bounds",
+										"entity": "this"
+									},
+									"side": "up"
+								},
+								"z": {
+									"type": "neo-apoli:vector/component",
+									"vector": {
+										"type": "neo-apoli:entity/position",
+										"entity": "this"
+									},
+									"axis": "z"
+								}
+							}
+						},
+						"second": 0.5
+					}
+				}
+			]
+		}
+	]
+}

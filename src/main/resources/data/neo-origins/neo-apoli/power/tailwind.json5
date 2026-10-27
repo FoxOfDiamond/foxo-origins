@@ -1,0 +1,11 @@
+{
+	type: "neo-apoli:modify/attribute/vanilla",
+	modifiers: [
+		{
+			id: "*:*",
+			attribute: "minecraft:movement_speed",
+			amount: 0.2,
+			operation: "add_multiplied_base"
+		}
+	]
+}

@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "foxo-origins",
+	"version": "${version}",
+	"name": "Foxo-origins",
+	"description": "A thrown together port of origins so I can start making datapacks ",
+	"authors": [
+		"Syrena(SeirenesVulpes)"
+	],
+	"contact": {
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/foxo-origins/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"syrena.foxo_origins.FoxoOrigins"
+		],
+		"client": [
+			"syrena.foxo_origins.client.FoxoOriginsClient"
+		],
+		"fabric-datagen": [
+			"syrena.foxo_origins.client.FoxoOriginsDataGenerator"
+		]
+	},
+    "accessWidener": "foxo-origins.classtweaker",
+	"mixins": [
+		"foxo-origins.mixins.json",
+		{
+			"config": "foxo-origins.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~1.21.5",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

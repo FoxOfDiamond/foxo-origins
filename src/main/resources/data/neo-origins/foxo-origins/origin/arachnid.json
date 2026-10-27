@@ -1,0 +1,17 @@
+{
+  "name": "Arachnid",
+  "description": "Be a spider",
+  "short_description": "Spooder!",
+  "icon": {
+    "id": "minecraft:cobweb"
+  },
+  "impact": "3",
+  "powers": [
+    "neo-origins:arthropod",
+    "neo-origins:carnivore",
+    "neo-origins:climbing",
+    "neo-origins:fragile",
+    "neo-origins:master_of_webs",
+    "neo-origins:webbing"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+	"type": "neo-apoli:any_of",
+	"conditions": [
+		{
+			"type": "neo-apoli:all_of",
+			"conditions": [
+				{
+					"type": "neo-apoli:is_entity_sneaking",
+					"entity": "this"
+				},
+				{
+					"type": "neo-apoli:is_entity_fall_flying",
+					"entity": "this"
+				}
+			]
+		},
+		{
+			"type": "neo-apoli:all_of",
+			"conditions": [
+				{
+					"type": "neo-apoli:inverted",
+					"condition": {
+						"type": "neo-apoli:is_entity_sneaking",
+						"entity": "this"
+					}
+				},
+				{
+					"type": "neo-apoli:inverted",
+					"condition": {
+						"type": "neo-apoli:is_entity_fall_flying",
+						"entity": "this"
+					}
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,26 @@
+{
+	type: "neo-apoli:modify/damage/taken",
+	modifiers: [
+		{
+			type: "neo-apoli:add",
+			phase: "base",
+			amount: 3
+		}
+	],
+	active_condition: {
+		type: "neo-apoli:all_of",
+		conditions: [
+			{
+				type: "neo-apoli:is_damage_source_in_tag",
+				tag: "#minecraft:is_projectile",
+				damage_source: "taken_damage/source"
+			},
+			{
+				type: "neo-apoli:is_entity_of_type",
+				entity_type: "minecraft:snowball",
+				entity: "direct_damaging_entity"
+			}
+		]
+	},
+	hidden: true
+}

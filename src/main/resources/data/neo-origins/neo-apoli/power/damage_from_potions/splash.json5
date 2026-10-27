@@ -1,0 +1,115 @@
+{
+	type: "neo-apoli:callback/projectile/land",
+	action: {
+		type: "neo-apoli:area_of_effect",
+		area_target: "entity",
+		area_action: [
+			{
+				type: "neo-apoli:damage_entity",
+				damage_type: "*:hurt_by_water",
+				amount: {
+					type: "neo-apoli:difference",
+					values: [
+						4.0,
+						{
+							type: "neo-apoli:round",
+							value: {
+								type: "neo-apoli:distance_between_positions",
+								first: {
+									type: "neo-apoli:entity/position",
+									entity: "projectile"
+								},
+								second: {
+									type: "neo-apoli:entity/position",
+									entity: "entity_in_area"
+								}
+							},
+							places: 2
+						}
+					]
+				},
+				victim: "entity_in_area"
+			},
+			{
+				type: "neo-apoli:trigger_power_cooldown",
+				power: "*:water_vulnerability@cooldown",
+				entity: "entity_in_area"
+			}
+		],
+		area_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:entity_has_power",
+					power: "*:damage_from_potions",
+					entity: "entity_in_area"
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:float",
+						comparator: "<",
+						first: {
+							type: "neo-apoli:round",
+							value: {
+								type: "neo-apoli:distance_between_positions",
+								first: {
+									type: "neo-apoli:entity/position",
+									entity: "projectile"
+								},
+								second: {
+									type: "neo-apoli:entity/position",
+									entity: "entity_in_area"
+								}
+							},
+							places: 2
+						},
+						second: 4.0
+					}
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:float",
+						comparator: "==",
+						first: {
+							type: "neo-apoli:power/cooldown/progress",
+							power: "*:water_vulnerability@cooldown",
+							entity: "entity_in_area"
+						},
+						second: 1.0
+					}
+				}
+			]
+		},
+		position: {
+			type: "neo-apoli:entity/position",
+			entity: "projectile"
+		},
+		shape: "cube",
+		radius: {
+			type: "neo-apoli:box/size",
+			box: {
+				type: "neo-apoli:offset",
+				box: {
+					type: "neo-apoli:entity/bounds",
+					entity: "projectile"
+				},
+				offset: [
+					-4.0,
+					-2.0,
+					-4.0,
+					4.0,
+					2.0,
+					4.0
+				]
+			}
+		}
+	},
+	active_condition: {
+		type: "neo-apoli:is_entity_of_type",
+		entity_type: "minecraft:splash_potion",
+		entity: "projectile"
+	},
+	hidden: true
+}

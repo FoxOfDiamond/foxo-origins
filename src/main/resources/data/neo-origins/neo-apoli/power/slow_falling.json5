@@ -1,0 +1,15 @@
+{
+	type: "neo-apoli:modify/falling",
+	modifiers: [
+		{
+			type: "neo-apoli:set",
+			phase: "base",
+			amount: 0.01
+		}
+	],
+	take_fall_damage: false,
+	active_condition: {
+		type: "neo-apoli:reference",
+		value: "*:entity/is_*_eligible"
+	}
+}

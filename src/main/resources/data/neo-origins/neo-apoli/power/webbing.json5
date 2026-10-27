@@ -1,0 +1,175 @@
+{
+	type: "neo-apoli:multiple",
+	cooldown: {
+		type: "neo-apoli:cooldown",
+		hud_element: {
+			type: "neo-apoli:resource_bar",
+			sprite_location: {
+				background: "neo-apoli:resource_bar/6/background",
+				fill: "neo-apoli:resource_bar/6/fill",
+				icon: "neo-apoli:resource_bar/6/icon"
+			}
+		},
+		cooldown: 100
+	},
+	"shoot_webs": {
+		type: "neo-apoli:callback/power/tick",
+		rising_action: [
+			{
+				type: "neo-apoli:shoot_entity",
+				entity_type: "minecraft:snowball",
+				tag: {
+					Item: {
+						id: "minecraft:cobweb",
+						count: 1,
+						components: {
+							"minecraft:custom_data": {
+								"neo-origins:webbing": {
+									webber: true
+								}
+							}
+						}
+					}
+				},
+				position: {
+					type: "neo-apoli:entity/position",
+					entity: "this",
+					anchor: "eyes"
+				},
+				"direction": {
+					type: "neo-apoli:entity/view",
+					entity: "this"
+				},
+				shooter: "this"
+			},
+			{
+				type: "neo-apoli:trigger_power_cooldown",
+				power: "*:*@cooldown",
+				entity: "this"
+			}
+		],
+		interval: 0,
+		active_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:float",
+						comparator: "==",
+						first: {
+							type: "neo-apoli:round",
+							value: {
+								type: "neo-apoli:power/cooldown/progress",
+								power: "*:*@cooldown",
+								entity: "this"
+							},
+							places: 2
+						},
+						second: 1.0
+					}
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:int",
+						comparator: "==",
+						first: {
+							type: "neo-apoli:key/pressed_ticks",
+							id: "key.saveToolbarActivator",
+							entity: "this"
+						},
+						second: 1
+					}
+				}
+			]
+		}
+	},
+	"no_damage_and_knockback": {
+		type: "neo-apoli:modify/damage/dealt",
+		modifiers: [
+			{
+				type: "neo-apoli:set",
+				phase: "total",
+				amount: -1
+			}
+		],
+		active_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:is_damage_source_in_tag",
+					tag: "#minecraft:is_projectile",
+					damage_source: "dealt_damage/source"
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:nbt",
+						first: {
+							Item: {
+								components: {
+									"minecraft:custom_data": {
+										"neo-origins:webbing": {
+											webber: true
+										}
+									}
+								}
+							}
+						},
+						second: {
+							type: "neo-apoli:entity",
+							entity: "direct_damaging_entity"
+						}
+					}
+				}
+			]
+		}
+	},
+	"place_webs": {
+		type: "neo-apoli:callback/projectile/land",
+		action: {
+			type: "neo-apoli:place_block",
+			block: "minecraft:cobweb",
+			position: {
+				type: "neo-apoli:entity/position",
+				entity: "projectile"
+			},
+			offset_direction: {
+				type: "neo-apoli:context",
+				parameter: "landed_on_side"
+			}
+		},
+		active_condition: {
+			type: "neo-apoli:all_of",
+			conditions: [
+				{
+					type: "neo-apoli:is_entity_in_tag",
+					tag: "#minecraft:impact_projectiles",
+					entity: "projectile"
+				},
+				{
+					type: "neo-apoli:compare",
+					comparison: {
+						type: "neo-apoli:nbt",
+						first: {
+							Item: {
+								components: {
+									"minecraft:custom_data": {
+										"neo-origins:webbing": {
+											webber: true
+										}
+									}
+								}
+							}
+						},
+						second: {
+							type: "neo-apoli:entity",
+							entity: "projectile"
+						}
+					}
+				}
+			]
+		}
+	}
+}

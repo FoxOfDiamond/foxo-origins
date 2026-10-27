@@ -1,0 +1,11 @@
+{
+  "name": "Human",
+  "description": "Human.",
+  "short_description": "You're boring",
+  "icon": {
+    "id": "minecraft:iron_sword"
+  },
+  "impact": "0",
+  "powers": [
+  ]
+}

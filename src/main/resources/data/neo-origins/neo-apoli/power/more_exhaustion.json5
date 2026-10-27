@@ -1,0 +1,10 @@
+{
+	type: "neo-apoli:modify/exhaustion",
+	modifiers: [
+		{
+			type: "neo-apoli:multiply_multiplicative",
+			phase: "base",
+			amount: 0.6
+		}
+	]
+}
