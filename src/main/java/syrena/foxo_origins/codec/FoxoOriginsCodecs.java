@@ -23,12 +23,6 @@ import syrena.foxo_origins.origin_layer.OriginLayer;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
 public class FoxoOriginsCodecs {
-    public static final Codec<Holder<Origin>> ORIGIN_HOLDER_CODEC = RegistryFixedCodec.create(FoxoOriginsRegistry.ORIGIN);
-    public static final Codec<Holder<OriginLayer>> ORIGIN_LAYER_HOLDER_CODEC = RegistryFixedCodec.create(FoxoOriginsRegistry.ORIGIN_LAYER);
-
-    public static final StreamCodec<RegistryFriendlyByteBuf,Holder<Origin>> ORIGIN_HOLDER_STREAM_CODEC = ByteBufCodecs.holder(FoxoOriginsRegistry.ORIGIN,Origin.STREAM_CODEC);
-    public static final StreamCodec<RegistryFriendlyByteBuf,Holder<OriginLayer>> ORIGIN_LAYER_HOLDER_STREAM_CODEC = ByteBufCodecs.holder(FoxoOriginsRegistry.ORIGIN_LAYER,OriginLayer.STREAM_CODEC);
-
     public static final Codec<ParsedArgument<PowerArgument.Result>> POWER_OR_TAG_ARGUMENT = ParsedArgument.codec(PowerArgument.powerOrTag());
 
 }

@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import syrena.foxo_origins.FoxoOrigins;
 import syrena.foxo_origins.attachment.entity.FoxoOriginsAttachment;
 import syrena.foxo_origins.command.argument.OriginArgument;
+import syrena.foxo_origins.command.argument.OriginLayerArgument;
 import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin_layer.OriginLayer;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 public class FoxoOriginsRegistry {
     public static final ResourceKey<Registry<Origin>> ORIGIN = create("origin");
     public static final ResourceKey<Registry<OriginLayer>> ORIGIN_LAYER = create("origin_layer");
-    public static final AttachmentType<Map<Holder<Origin>,Holder<OriginLayer>>> ORIGIN_ATTACHMENT = AttachmentRegistry.create(FoxoOrigins.id("origin"), builder -> builder
+    public static final AttachmentType<Map<Origin,OriginLayer>> ORIGIN_ATTACHMENT = AttachmentRegistry.create(FoxoOrigins.id("origin"), builder -> builder
             .persistent(FoxoOriginsAttachment.CODEC)
             .syncWith(FoxoOriginsAttachment.STREAM_CODEC, AttachmentSyncPredicate.all())
             .copyOnDeath()
@@ -34,7 +35,6 @@ public class FoxoOriginsRegistry {
 
     public static void registerAll(){
         ArgumentTypeRegistry.registerArgumentType(FoxoOrigins.id("origin"), OriginArgument.class, OriginArgument.Info.INSTANCE);
-
-        DynamicRegistries.registerSynced(ORIGIN_LAYER,OriginLayer.CODEC);
+        ArgumentTypeRegistry.registerArgumentType(FoxoOrigins.id("origin_layer"), OriginLayerArgument.class, OriginLayerArgument.Info.INSTANCE);
     }
 }

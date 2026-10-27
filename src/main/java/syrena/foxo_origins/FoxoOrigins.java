@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -19,12 +20,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import syrena.foxo_origins.attachment.entity.FoxoOriginsAttachment;
 import syrena.foxo_origins.command.OriginCommand;
 import syrena.foxo_origins.network.packet.FoxoOriginsPackets;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginsPacket;
 import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.origin.ServerOriginManager;
+import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
+
+import java.util.HashMap;
 
 public class FoxoOrigins implements ModInitializer {
 	public static final String MOD_ID = "foxo-origins";
@@ -42,11 +47,15 @@ public class FoxoOrigins implements ModInitializer {
         FoxoOriginsRegistry.registerAll();
 
         OriginManager.getInstance().init();
+        OriginLayerManager.getInstance().init();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, context,selection) -> {
             OriginCommand.register(dispatcher.getRoot(),context);
         });
-
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            LOGGER.warn("Joined");
+            FoxoOriginsAttachment.refreshOrigins(entity,entity.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>()));
+        });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> FoxoOrigins.server = server);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> FoxoOrigins.server = null);
 	}

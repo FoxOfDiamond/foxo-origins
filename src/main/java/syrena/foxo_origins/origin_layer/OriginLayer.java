@@ -3,10 +3,13 @@ package syrena.foxo_origins.origin_layer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.eggohito.neo_apoli.context.ContextValidatable;
+import io.github.eggohito.neo_apoli.context.ContextValidator;
 import io.github.eggohito.neo_apoli.provider.custom.bool.BooleanProvider;
 import io.github.eggohito.neo_apoli.provider.custom.bool.ConstantBooleanProvider;
 import io.github.eggohito.neo_apoli.provider.custom.number.IntProvider;
 import io.github.eggohito.neo_apoli.provider.custom.number.ints.ConstantIntProvider;
+import io.github.eggohito.neo_apoli.registry.context.NeoApoliContextParameters;
 import io.github.eggohito.neo_apoli.util.tag.TagLike;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -25,7 +28,10 @@ import java.util.List;
 import java.util.Optional;
 
 
-public record OriginLayer(Component name, Component description, Component short_description, ItemStack icon, IntProvider order, TagLike<Holder<Origin>> origins, Optional<Holder<Origin>> defaultOrigin, BooleanProvider enabled, BooleanProvider allowRandom, IntProvider loading_priority) {
+public record OriginLayer(Component name, Component description, Component short_description, ItemStack icon, IntProvider order, TagLike<Origin> origins, Optional<Origin> defaultOrigin, BooleanProvider enabled, BooleanProvider allowRandom, IntProvider loading_priority)  {
+    static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
+            .required(NeoApoliContextParameters.THIS_ENTITY)
+            .build();
     public static final MapCodec<OriginLayer> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                             ComponentSerialization.CODEC.fieldOf("name").forGetter(OriginLayer::name),
@@ -34,7 +40,7 @@ public record OriginLayer(Component name, Component description, Component short
                             ItemStack.CODEC.fieldOf("icon").forGetter(OriginLayer::icon),
                             IntProvider.CODEC.optionalFieldOf("order", new ConstantIntProvider(0)).forGetter(OriginLayer::order),
                             TagLike.createCodec(OriginManager.TAG_LOOKUP).fieldOf("origins").forGetter(OriginLayer::origins),
-                            FoxoOriginsCodecs.ORIGIN_HOLDER_CODEC.optionalFieldOf("default_origin").forGetter(OriginLayer::defaultOrigin),
+                            Origin.CODEC.optionalFieldOf("default_origin").forGetter(OriginLayer::defaultOrigin),
                             BooleanProvider.CODEC.optionalFieldOf("enabled",new ConstantBooleanProvider(true)).forGetter(OriginLayer::enabled),
                             BooleanProvider.CODEC.optionalFieldOf("allow_random",new ConstantBooleanProvider(true)).forGetter(OriginLayer::allowRandom),
                             IntProvider.CODEC.optionalFieldOf("loading_priority", new ConstantIntProvider(0)).forGetter(OriginLayer::loading_priority))
@@ -51,10 +57,11 @@ public record OriginLayer(Component name, Component description, Component short
             ItemStack.STREAM_CODEC, OriginLayer::icon,
             IntProvider.STREAM_CODEC, OriginLayer::order,
             TagLike.createStreamCodec(OriginManager.TAG_LOOKUP),OriginLayer::origins,
-            ByteBufCodecs.optional(FoxoOriginsCodecs.ORIGIN_HOLDER_STREAM_CODEC),OriginLayer::defaultOrigin,
+            ByteBufCodecs.optional(Origin.STREAM_CODEC),OriginLayer::defaultOrigin,
             BooleanProvider.STREAM_CODEC, OriginLayer::enabled,
             BooleanProvider.STREAM_CODEC, OriginLayer::allowRandom,
             IntProvider.STREAM_CODEC, OriginLayer::loading_priority,
             OriginLayer::new
     );
+
 }

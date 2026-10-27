@@ -15,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import syrena.foxo_origins.codec.FoxoOriginsCodecs;
 import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
 import java.util.HashMap;
@@ -22,31 +23,31 @@ import java.util.List;
 import java.util.Map;
 
 public class FoxoOriginsAttachment {
-    public static final Codec<Map<Holder<Origin>,Holder<OriginLayer>>> CODEC = Codec.unboundedMap(FoxoOriginsCodecs.ORIGIN_HOLDER_CODEC,FoxoOriginsCodecs.ORIGIN_LAYER_HOLDER_CODEC);
-    public static final StreamCodec<RegistryFriendlyByteBuf, Map<Holder<Origin>, Holder<OriginLayer>>> STREAM_CODEC =
+    public static final Codec<Map<Origin,OriginLayer>> CODEC = Codec.unboundedMap(Origin.CODEC,OriginLayer.CODEC);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Map<Origin, OriginLayer>> STREAM_CODEC =
             ByteBufCodecs.map(
                     HashMap::new, // Constructs a map with the specified capacity
-                    ByteBufCodecs.holder(FoxoOriginsRegistry.ORIGIN,Origin.STREAM_CODEC),
-                    ByteBufCodecs.holder(FoxoOriginsRegistry.ORIGIN_LAYER,OriginLayer.STREAM_CODEC),
+                    Origin.STREAM_CODEC,
+                    OriginLayer.STREAM_CODEC,
                     256 // The map can only have up to 256 elements
             );
-    public static void refreshOrigins(Entity entity, Map<Holder<Origin>,Holder<OriginLayer>> origins){
+    public static void refreshOrigins(Entity entity, Map<Origin,OriginLayer> origins){
         MutablePowers mutable = MutablePowers.create(entity);
-        origins.forEach((origin,layer) -> {
-            origin.value().powers().elements().forEach(power -> {
-                mutable.grant(power.id(),powerSource(layer,entity));
+        /*origins.forEach((origin,layer) -> {
+            origin.powers().elements().forEach(power -> {
+                mutable.grant(power.id(),powerSource(layer));
             });
         });
         origins.forEach((origin,layer) -> {
-            mutable.getAllFromSource(powerSource(layer,entity)).forEach(power -> {
-                if (!origin.value().powers().contains(power)){
-                    mutable.revoke(power.id(),powerSource(layer,entity));
+            mutable.getAllFromSource(powerSource(layer)).forEach(power -> {
+                if (!origin.powers().elements().contains(power)){
+                    mutable.revoke(power.id(),powerSource(layer));
                 }
             });
-        });
+        });*/
         mutable.close();
     }
-    public static ResourceLocation powerSource(Holder<OriginLayer> layer, Entity entity){
-        return entity.level().registryAccess().getOrThrow(FoxoOriginsRegistry.ORIGIN_LAYER).value().getKey(layer.value());
+    public static ResourceLocation powerSource(OriginLayer layer){
+        return OriginLayerManager.getInstance().getKey(layer);
     }
 }

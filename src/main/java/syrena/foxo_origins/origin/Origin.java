@@ -14,6 +14,8 @@ import io.github.eggohito.neo_apoli.power.PowerHolder;
 import io.github.eggohito.neo_apoli.power.manager.PowerManager;
 import io.github.eggohito.neo_apoli.provider.custom.number.IntProvider;
 import io.github.eggohito.neo_apoli.provider.custom.number.ints.ConstantIntProvider;
+import io.github.eggohito.neo_apoli.registry.context.NeoApoliContextParameterTypes;
+import io.github.eggohito.neo_apoli.registry.context.NeoApoliContextParameters;
 import io.github.eggohito.neo_apoli.util.ParsedArgument;
 import io.github.eggohito.neo_apoli.util.tag.TagLike;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -33,6 +35,7 @@ import static syrena.foxo_origins.codec.FoxoOriginsCodecs.POWER_OR_TAG_ARGUMENT;
 
 public record Origin(Component name, Component description, Component short_description, ItemStack icon, IntProvider impact, IntProvider order, TagLike<PowerHolder<?>> powers, Optional<Condition> visibleCondition, Optional<Condition> choosableCondition, IntProvider loading_priority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
+            .required(NeoApoliContextParameters.THIS_ENTITY)
             .build();
     public static final MapCodec<Origin> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
@@ -42,7 +45,7 @@ public record Origin(Component name, Component description, Component short_desc
                             ItemStack.CODEC.fieldOf("icon").forGetter(Origin::icon),
                             IntProvider.CODEC.optionalFieldOf("order",new ConstantIntProvider(0)).forGetter(Origin::order),
                             IntProvider.CODEC.fieldOf("impact").forGetter(Origin::impact),
-                            TagLike.createCodec(PowerManager.TAG_LOOKUP).fieldOf("origins").forGetter(Origin::powers),
+                            TagLike.createCodec(PowerManager.TAG_LOOKUP).fieldOf("powers").forGetter(Origin::powers),
                             Condition.CODEC.optionalFieldOf("visible_condition").forGetter(Origin::visibleCondition),
                             Condition.CODEC.optionalFieldOf("choosable_condition").forGetter(Origin::choosableCondition),                           IntProvider.CODEC.optionalFieldOf("loading_priority",new ConstantIntProvider(0)).forGetter(Origin::loading_priority))
                     .apply(instance,Origin::new)
@@ -80,8 +83,5 @@ public record Origin(Component name, Component description, Component short_desc
     public void validate(ContextValidator validator) {
         this.choosableCondition().ifPresent(choosableCondition -> choosableCondition.validate(validator.forChild(".choosable_condition")));
         this.visibleCondition().ifPresent(visibleCondition -> visibleCondition.validate(validator.forChild(".visible_condition")));
-        this.powers().elements().forEach(powerHolder -> {
-            powerHolder.value().validate(validator.forChild(".powers"));
-        });
     }
 }

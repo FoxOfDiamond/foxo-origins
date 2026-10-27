@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin>> origins, Map<ResourceLocation, List<Holder<Origin>>> tags) implements CustomPacketPayload {
+public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Origin> origins, Map<ResourceLocation, List<Origin>> tags) implements CustomPacketPayload {
 
     public static final Type<ClientboundUpdateOriginsPacket> TYPE = new Type<>(OriginManager.ID.withPath(path -> "clientbound/" + path + "/update"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateOriginsPacket> CODEC = StreamCodec.ofMember(ClientboundUpdateOriginsPacket::send, ClientboundUpdateOriginsPacket::receive);
@@ -30,7 +30,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
 
     private static ClientboundUpdateOriginsPacket receive(RegistryFriendlyByteBuf buf) {
 
-        Map<ResourceLocation, Holder<Origin>> origins = new Object2ObjectLinkedOpenHashMap<>();
+        Map<ResourceLocation, Origin> origins = new Object2ObjectLinkedOpenHashMap<>();
         int originsCount = buf.readInt();
 
         for (int i = 0; i < originsCount; i++) {
@@ -38,7 +38,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
             ResourceLocation id = ResourceLocation.STREAM_CODEC.decode(buf);
 
             try {
-                OriginManager.handleSelf(FoxoOriginsCodecs.ORIGIN_HOLDER_STREAM_CODEC.decode(buf), origins::put);
+                origins.put(id,Origin.STREAM_CODEC.decode(buf));
             }
 
             catch (Exception e) {
@@ -48,7 +48,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
 
         }
 
-        Map<ResourceLocation, List<Holder<Origin>>> tags = new Object2ObjectLinkedOpenHashMap<>();
+        Map<ResourceLocation, List<Origin>> tags = new Object2ObjectLinkedOpenHashMap<>();
         int tagsCount = buf.readInt();
 
         for (int i = 0; i < tagsCount; i++) {
@@ -61,7 +61,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
                 try {
 
                     ResourceLocation holderId = ResourceLocation.STREAM_CODEC.decode(buf);
-                    Holder<Origin> holder = Objects.requireNonNull(origins.get(holderId), "Unknown origin" + holderId.toString());
+                    Origin holder = Objects.requireNonNull(origins.get(holderId), "Unknown origin" + holderId.toString());
 
                     tags
                             .computeIfAbsent(id, k -> new ObjectArrayList<>())
@@ -84,7 +84,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
 
     private void send(RegistryFriendlyByteBuf buf) {
 
-        Map<ResourceLocation, Holder<Origin>> filtered = new Object2ObjectLinkedOpenHashMap<>(origins());
+        Map<ResourceLocation, Origin> filtered = new Object2ObjectLinkedOpenHashMap<>(origins());
 
         buf.writeInt(filtered.size());
 
@@ -94,7 +94,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
             ResourceLocation.STREAM_CODEC.encode(buf, id);
 
             try {
-                FoxoOriginsCodecs.ORIGIN_HOLDER_STREAM_CODEC.encode(buf, originEntry.getValue());
+                Origin.STREAM_CODEC.encode(buf, originEntry.getValue());
             }
 
             catch (Exception e) {
@@ -111,7 +111,7 @@ public record ClientboundUpdateOriginsPacket(Map<ResourceLocation, Holder<Origin
             ResourceLocation id = tagEntry.getKey();
             ResourceLocation.STREAM_CODEC.encode(buf, id);
 
-            List<Holder<Origin>> holders = tagEntry.getValue();
+            List<Origin> holders = tagEntry.getValue();
             buf.writeInt(holders.size());
 
             for (var holder : holders) {

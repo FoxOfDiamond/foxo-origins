@@ -38,29 +38,29 @@ import net.minecraft.tags.TagLoader;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
+import org.quiltmc.parsers.json.JsonFormat;
 import org.slf4j.Logger;
 import syrena.foxo_origins.FoxoOrigins;
-import syrena.foxo_origins.attachment.entity.FoxoOriginsAttachment;
-import syrena.foxo_origins.codec.FoxoOriginsCodecs;
 import syrena.foxo_origins.event.DependencyManager;
 import syrena.foxo_origins.event.OriginPreparation;
 import syrena.foxo_origins.event.OriginReloadEvents;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginsPacket;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLocation, Holder<Origin>> implements OriginManager, IdentifiableResourceReloadListener {
+public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLocation, Origin> implements OriginManager, IdentifiableResourceReloadListener {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Supplier<ImmutableSet<ResourceLocation>> DEPENDENCIES = Suppliers.memoize(() -> Util.make(ImmutableSet.builder(), DependencyManager.ORIGINS.invoker()::add).build());
 
-    private final JsonFileToIdConverter contentLoader = JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN);
-    private final TagLoader<Holder<Origin>> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN));
+    private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN).directory(),EnumSet.of(JsonFormat.JSON));
+    private final TagLoader<Origin> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN));
 
     private volatile Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags = Map.of();
     private volatile DynamicOps<JsonElement> ops = JsonOps.INSTANCE;
@@ -91,7 +91,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
         OriginReloadEvents.BEFORE.invoker().beforeReload(manager, profiler);
         LOGGER.info("Parsing origins from data packs...");
 
-        ImmutableMap.Builder<ResourceLocation, Holder<Origin>> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, Origin> builder = ImmutableMap.builder();
         this.contents = ImmutableMap.of();
 
         pendingOrigins.forEach((id, jsonWithSource) -> {
@@ -99,10 +99,10 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
             OriginPreparation.EVENT.invoker().prepare(id, jsonWithSource, contentLoader.directory(), ops);
 
             ResourceLocationUtil.setCurrent(id);
-
+            LOGGER.info(id.toString());
             MiscUtil.handleResult(
-                    FoxoOriginsCodecs.ORIGIN_HOLDER_CODEC.parse(ops, jsonWithSource.json()),
-                    holder -> OriginManager.handleSelf(holder, builder::put),
+                    Origin.CODEC.parse(ops, jsonWithSource.json()),
+                    origin -> builder.put(id,origin),
                     (thingy) -> true,
                     warning -> LOGGER.warn("Found warning(s) while parsing origin {} from data pack [{}]: {}", id.toString(), jsonWithSource.source(), warning),
                     error -> LOGGER.error("Error trying to parse origin {} from data pack [{}] (skipping): {}", id.toString(), jsonWithSource.source(), error)
@@ -157,22 +157,21 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
 
     private void finalize(ReloadableServerResources resources) {
 
-        ImmutableMap.Builder<ResourceLocation, Holder<Origin>> validatedContents = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, Origin> validatedContents = ImmutableMap.builder();
         int prevSize = contents.size();
 
         LOGGER.info("Validating {} origin(s)...", prevSize);
 
-        for (var holder : contents.values()) {
-            ResourceLocation id = OriginManager.getInstance().getKey(holder);
+        for (var origin : contents.values()) {
+            ResourceLocation id = OriginManager.getInstance().getKey(origin);
             try (Reporter.Scoped reporter = new Reporter.Scoped("{\"" + id + "\"}", problems -> LOGGER.error("Found problems while validating {}:\n{}", id.toString(), problems))) {
 
-                Origin origin = holder.value();
                 ContextValidator validator = new ContextValidator(Origin.PARAMETERS, reporter, MiscUtil.getLookupProvider(resources));
 
                 origin.validate(validator);
 
                 if (!reporter.hasProblems()) {
-                    validatedContents.put(id, holder);
+                    validatedContents.put(id, origin);
                 }
 
             }

@@ -14,8 +14,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import syrena.foxo_origins.command.argument.OriginArgument;
+import syrena.foxo_origins.command.argument.OriginLayerArgument;
 import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
 import java.util.*;
@@ -24,7 +26,6 @@ import static net.minecraft.commands.Commands.*;
 
 public class OriginCommand {
     public static final ResourceLocation DEFAULT_LAYER = ResourceLocation.fromNamespaceAndPath("neo-origins","foxo_origins");
-    public static final ResourceKey<OriginLayer> DEFAULT_LAYER_KEY = ResourceKey.create(FoxoOriginsRegistry.ORIGIN_LAYER,DEFAULT_LAYER);
     public static void register(CommandNode<CommandSourceStack> rootNode, CommandBuildContext context) {
 
         CommandNode<CommandSourceStack> baseNode = literal("origin")
@@ -44,7 +45,7 @@ public class OriginCommand {
                     .then(argument("targets", EntityArgument.players())
                             .then(argument("origin", OriginArgument.origin())
                                     .executes(SetArgument::setWithDefaultLayer)
-                                    .then(argument("layer", ResourceArgument.resource(context, FoxoOriginsRegistry.ORIGIN_LAYER))
+                                    .then(argument("layer", OriginLayerArgument.originLayer())
                                             .executes(SetArgument::setWithLayer))));
 
             return node.build();
@@ -53,12 +54,12 @@ public class OriginCommand {
         static int setWithDefaultLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
             CommandSourceStack source = context.getSource();
 
-            Holder<OriginLayer> layer = source.getLevel().registryAccess().getOrThrow(DEFAULT_LAYER_KEY);
-            Holder<Origin> origin = OriginArgument.getOrigin(context,"origin");
+            OriginLayer layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
+            Origin origin = OriginArgument.getOrigin(context,"origin");
             List<ServerPlayer> targets = new ObjectArrayList<>(EntityArgument.getPlayers(context,"targets"));
             List<ServerPlayer> processedTargets = new ArrayList<>();
             for(ServerPlayer player: targets){
-                Map<Holder<Origin>,Holder<OriginLayer>> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
+                Map<Origin,OriginLayer> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
                 if (attachment.get(origin) != null && attachment.get(origin).equals(layer)) continue;
                 player.modifyAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,map -> {
                     map.put(origin,layer);
@@ -70,26 +71,26 @@ public class OriginCommand {
                 if (targets.isEmpty()) {
                     source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.failure.no_targets","set"));
                 } else if (targets.size() == 1) {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.getRegisteredName(),layer.getRegisteredName()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.name(),layer.name()));
                 } else {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.getRegisteredName(),layer.getRegisteredName()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.name(),layer.name()));
                 }
             } else if (processedTargets.size() == 1){
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.getRegisteredName(),origin.getRegisteredName()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.name(),origin.name()),true);
             } else {
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.getRegisteredName(),origin.getRegisteredName()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.name(),origin.name()),true);
             }
             return processedTargets.size();
         }
         static int setWithLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
             CommandSourceStack source = context.getSource();
 
-            Holder<Origin> origin = OriginArgument.getOrigin(context,"origin");
-            Holder<OriginLayer> layer = ResourceArgument.getResource(context,"layer",FoxoOriginsRegistry.ORIGIN_LAYER);
+            Origin origin = OriginArgument.getOrigin(context,"origin");
+            OriginLayer layer = OriginLayerArgument.getOriginLayer(context,"layer");
             List<ServerPlayer> targets = new ObjectArrayList<>(EntityArgument.getPlayers(context,"targets"));
             List<ServerPlayer> processedTargets = new ArrayList<>();
             for(ServerPlayer player: targets){
-                Map<Holder<Origin>,Holder<OriginLayer>> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
+                Map<Origin,OriginLayer> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
                 if (attachment.get(origin) != null && attachment.get(origin).equals(layer)) continue;
                 player.modifyAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,map -> {
                     map.put(origin,layer);
@@ -101,14 +102,14 @@ public class OriginCommand {
                 if (targets.isEmpty()) {
                     source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.failure.no_targets","set"));
                 } else if (targets.size() == 1) {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.getRegisteredName(),layer.getRegisteredName()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.name(),layer.name()));
                 } else {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.getRegisteredName(),layer.getRegisteredName()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.name(),layer.name()));
                 }
             } else if (processedTargets.size() == 1){
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.getRegisteredName(),origin.getRegisteredName()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.name(),origin.name()),true);
             } else {
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.getRegisteredName(),origin.getRegisteredName()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.name(),origin.name()),true);
             }
             return processedTargets.size();
         }

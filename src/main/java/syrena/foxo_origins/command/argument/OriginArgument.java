@@ -73,11 +73,11 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
         return context.getArgument(name, OriginArgument.Result.class);
     }
 
-    public static List<Holder<Origin>> getOrigins(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<Origin> getOrigins(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return context.getArgument(name, OriginArgument.Result.class).get();
     }
 
-    public static Holder<Origin> getOrigin(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static Origin getOrigin(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginArgument.Result.Singleton singleton ->
                     singleton.get().getFirst();
@@ -86,7 +86,7 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
         };
     }
 
-    public static List<Holder<Origin>> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<Origin> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginArgument.Result.Singleton singleton ->
                     throw MiscUtil.createCommandException(() -> "Expected a tag, but got origin " + singleton.id() + "!");
@@ -106,12 +106,12 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
 
     public sealed interface Result extends ContextValidatable permits OriginArgument.Result.Singleton, OriginArgument.Result.Collection {
 
-        List<Holder<Origin>> get() throws CommandSyntaxException;
+        List<Origin> get() throws CommandSyntaxException;
 
         record Singleton(ResourceLocation id) implements OriginArgument.Result {
 
             @Override
-            public List<Holder<Origin>> get() throws CommandSyntaxException {
+            public List<Origin> get() throws CommandSyntaxException {
                 return List.of(OriginManager.getInstance().getAsResult(id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error)));
             }
 
@@ -125,7 +125,7 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
         record Collection(TagKey<Origin> tag) implements OriginArgument.Result {
 
             @Override
-            public List<Holder<Origin>> get() throws CommandSyntaxException {
+            public List<Origin> get() throws CommandSyntaxException {
                 return OriginManager.getInstance().getTagAsResult(this.id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error));
             }
 

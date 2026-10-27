@@ -56,6 +56,9 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     modImplementation "io.github.eggohito:Neo-Apoli:0.1.0"
 
+    include(implementation("org.quiltmc.parsers:json:${project.quiltmc_parsers_version}"))
+    include(implementation("org.quiltmc.parsers:gson:${project.quiltmc_parsers_version}"))
+
     modImplementation("org.projectlombok:lombok:${project.lombok_version}")
     annotationProcessor("org.projectlombok:lombok:${project.lombok_version}")
 

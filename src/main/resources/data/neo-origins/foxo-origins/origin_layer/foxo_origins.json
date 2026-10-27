@@ -6,8 +6,8 @@
     "id": "minecraft:ender_pearl"
   },
   "origins": [
-    /*"neo-origins:human",
+    "neo-origins:human",
     "neo-origins:avian",
-    "neo-origins:arachnid"*/
+    "neo-origins:arachnid"
   ]
 }
