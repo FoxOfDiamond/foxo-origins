@@ -1,5 +1,6 @@
 package syrena.foxo_origins.command;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import syrena.foxo_origins.FoxoOrigins;
 import syrena.foxo_origins.command.argument.OriginArgument;
 import syrena.foxo_origins.command.argument.OriginLayerArgument;
 import syrena.foxo_origins.origin.Origin;
@@ -52,50 +54,29 @@ public class OriginCommand {
 
         }
         static int setWithDefaultLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-            CommandSourceStack source = context.getSource();
-
             OriginLayer layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
-            Origin origin = OriginArgument.getOrigin(context,"origin");
-            List<ServerPlayer> targets = new ObjectArrayList<>(EntityArgument.getPlayers(context,"targets"));
-            List<ServerPlayer> processedTargets = new ArrayList<>();
-            for(ServerPlayer player: targets){
-                Map<Origin,OriginLayer> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
-                if (attachment.get(origin) != null && attachment.get(origin).equals(layer)) continue;
-                player.modifyAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,map -> {
-                    map.put(origin,layer);
-                    return map;
-                });
-                processedTargets.add(player);
-            }
-            if (processedTargets.isEmpty()) {
-                if (targets.isEmpty()) {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.failure.no_targets","set"));
-                } else if (targets.size() == 1) {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.name(),layer.name()));
-                } else {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.name(),layer.name()));
-                }
-            } else if (processedTargets.size() == 1){
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.name(),origin.name()),true);
-            } else {
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.name(),origin.name()),true);
-            }
-            return processedTargets.size();
+            return setWithLayer(context,layer);
         }
         static int setWithLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+
+            OriginLayer layer = OriginLayerArgument.getOriginLayer(context,"layer");
+            return setWithLayer(context,layer);
+        }
+        static int setWithLayer(CommandContext<CommandSourceStack> context, OriginLayer layer) throws CommandSyntaxException {
             CommandSourceStack source = context.getSource();
 
             Origin origin = OriginArgument.getOrigin(context,"origin");
-            OriginLayer layer = OriginLayerArgument.getOriginLayer(context,"layer");
             List<ServerPlayer> targets = new ObjectArrayList<>(EntityArgument.getPlayers(context,"targets"));
             List<ServerPlayer> processedTargets = new ArrayList<>();
             for(ServerPlayer player: targets){
-                Map<Origin,OriginLayer> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>());
+                Map<Origin,OriginLayer> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,ImmutableMap.of());
+                HashMap<Origin,OriginLayer> mutableAttachment = new HashMap<>(attachment);
+
                 if (attachment.get(origin) != null && attachment.get(origin).equals(layer)) continue;
-                player.modifyAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,map -> {
-                    map.put(origin,layer);
-                    return map;
-                });
+
+                mutableAttachment.put(origin,layer);
+                player.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
+
                 processedTargets.add(player);
             }
             if (processedTargets.isEmpty()) {

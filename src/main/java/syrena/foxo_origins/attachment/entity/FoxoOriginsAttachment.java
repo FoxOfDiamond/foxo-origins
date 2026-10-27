@@ -33,7 +33,7 @@ public class FoxoOriginsAttachment {
             );
     public static void refreshOrigins(Entity entity, Map<Origin,OriginLayer> origins){
         MutablePowers mutable = MutablePowers.create(entity);
-        /*origins.forEach((origin,layer) -> {
+        origins.forEach((origin,layer) -> {
             origin.powers().elements().forEach(power -> {
                 mutable.grant(power.id(),powerSource(layer));
             });
@@ -44,7 +44,7 @@ public class FoxoOriginsAttachment {
                     mutable.revoke(power.id(),powerSource(layer));
                 }
             });
-        });*/
+        });
         mutable.close();
     }
     public static ResourceLocation powerSource(OriginLayer layer){

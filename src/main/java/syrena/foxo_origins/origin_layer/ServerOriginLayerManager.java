@@ -153,12 +153,9 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
 
     private void finalize(ReloadableServerResources resources) {
 
-        ImmutableMap.Builder<ResourceLocation, OriginLayer> validatedContents = ImmutableMap.builder();
         int prevSize = contents.size();
 
         LOGGER.info("Validating {} origin layer(s)...", prevSize);
-
-        this.contents = validatedContents.build();
         LOGGER.info("{} origin layer(s) don't need to be validated but i don't wanna remove this line so. Origin layer manager contains {} origin layer(s)", prevSize, contents.size());
 
         LOGGER.info("Parsing origin layer tags from data packs...");

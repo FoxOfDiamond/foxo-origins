@@ -1,5 +1,6 @@
 package syrena.foxo_origins;
 
+import com.google.common.collect.ImmutableMap;
 import io.github.eggohito.neo_apoli.NeoApoli;
 import io.github.eggohito.neo_apoli.duck.internal.PowerRecipeDisplayHolder;
 import io.github.eggohito.neo_apoli.duck.internal.ServerCommandStorageHolder;
@@ -53,8 +54,7 @@ public class FoxoOrigins implements ModInitializer {
             OriginCommand.register(dispatcher.getRoot(),context);
         });
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            LOGGER.warn("Joined");
-            FoxoOriginsAttachment.refreshOrigins(entity,entity.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,new HashMap<>()));
+            //FoxoOriginsAttachment.refreshOrigins(entity,entity.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.of()));
         });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> FoxoOrigins.server = server);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> FoxoOrigins.server = null);
