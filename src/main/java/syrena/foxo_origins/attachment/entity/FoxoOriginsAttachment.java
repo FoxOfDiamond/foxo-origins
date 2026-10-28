@@ -2,6 +2,7 @@ package syrena.foxo_origins.attachment.entity;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.github.eggohito.neo_apoli.power.Power;
 import io.github.eggohito.neo_apoli.power.PowerHolder;
 import io.github.eggohito.neo_apoli.power.entity.MutablePowers;
@@ -14,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import syrena.foxo_origins.codec.FoxoOriginsCodecs;
 import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.origin_layer.OriginLayer;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
@@ -23,22 +25,22 @@ import java.util.List;
 import java.util.Map;
 
 public class FoxoOriginsAttachment {
-    public static final Codec<Map<Origin,OriginLayer>> CODEC = Codec.unboundedMap(Origin.CODEC,OriginLayer.CODEC);
-    public static final StreamCodec<RegistryFriendlyByteBuf, Map<Origin, OriginLayer>> STREAM_CODEC =
+    public static final Codec<Map<OriginLayer,Origin>> CODEC = Codec.unboundedMap(ResourceLocation.CODEC.flatXmap(OriginLayerManager.getInstance()::getAsResult,OriginLayerManager.getInstance()::getKeyAsResult),ResourceLocation.CODEC.flatXmap(OriginManager.getInstance()::getAsResult,OriginManager.getInstance()::getKeyAsResult));
+    public static final StreamCodec<RegistryFriendlyByteBuf, Map<OriginLayer, Origin>> STREAM_CODEC =
             ByteBufCodecs.map(
                     HashMap::new, // Constructs a map with the specified capacity
-                    Origin.STREAM_CODEC,
-                    OriginLayer.STREAM_CODEC,
+                    ResourceLocation.STREAM_CODEC.map(OriginLayerManager.getInstance()::get,OriginLayerManager.getInstance()::getKey),
+                    ResourceLocation.STREAM_CODEC.map(OriginManager.getInstance()::get,OriginManager.getInstance()::getKey),
                     256 // The map can only have up to 256 elements
             );
-    public static void refreshOrigins(Entity entity, Map<Origin,OriginLayer> origins){
+    public static void refreshOrigins(Entity entity, Map<OriginLayer,Origin> origins){
         MutablePowers mutable = MutablePowers.create(entity);
-        origins.forEach((origin,layer) -> {
+        origins.forEach((layer,origin) -> {
             origin.powers().elements().forEach(power -> {
                 mutable.grant(power.id(),powerSource(layer));
             });
         });
-        origins.forEach((origin,layer) -> {
+        origins.forEach((layer,origin) -> {
             mutable.getAllFromSource(powerSource(layer)).forEach(power -> {
                 if (!origin.powers().elements().contains(power)){
                     mutable.revoke(power.id(),powerSource(layer));

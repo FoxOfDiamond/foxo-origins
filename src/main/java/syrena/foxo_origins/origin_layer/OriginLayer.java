@@ -29,9 +29,7 @@ import java.util.Optional;
 
 
 public record OriginLayer(Component name, Component description, Component short_description, ItemStack icon, IntProvider order, TagLike<Origin> origins, Optional<Origin> defaultOrigin, BooleanProvider enabled, BooleanProvider allowRandom, IntProvider loading_priority)  {
-    static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
-            .required(NeoApoliContextParameters.THIS_ENTITY)
-            .build();
+
     public static final MapCodec<OriginLayer> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                             ComponentSerialization.CODEC.fieldOf("name").forGetter(OriginLayer::name),

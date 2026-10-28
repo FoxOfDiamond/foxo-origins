@@ -57,7 +57,7 @@ public interface OriginLayerManager extends ContentAndTagManager<ResourceLocatio
         List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
         for (int i=0;i<size();i++) {
 
-            if (values.get(i) == originLayer) {
+            if (values.get(i).equals(originLayer)) {
                 return DataResult.success(keys.get(i));
             }
 
@@ -67,7 +67,6 @@ public interface OriginLayerManager extends ContentAndTagManager<ResourceLocatio
 
 
     }
-
     default ResourceLocation getKey(OriginLayer originLayer) {
         return this.getKeyAsResult(originLayer).getOrThrow();
     }
