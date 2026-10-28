@@ -57,7 +57,7 @@ public interface OriginManager extends ContentAndTagManager<ResourceLocation, Or
         List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
         for (int i=0;i<size();i++) {
 
-            if (values.get(i) == origin) {
+            if (values.get(i).equals(origin)) {
                 return DataResult.success(keys.get(i));
             }
 

@@ -23,7 +23,7 @@ import java.util.Map;
 public class FoxoOriginsRegistry {
     public static final ResourceKey<Registry<Origin>> ORIGIN = create("origin");
     public static final ResourceKey<Registry<OriginLayer>> ORIGIN_LAYER = create("origin_layer");
-    public static final AttachmentType<Map<Origin,OriginLayer>> ORIGIN_ATTACHMENT = AttachmentRegistry.create(FoxoOrigins.id("origin"), builder -> builder
+    public static final AttachmentType<FoxoOriginsAttachment> ORIGIN_ATTACHMENT = AttachmentRegistry.create(FoxoOrigins.id("origin"), builder -> builder
             .persistent(FoxoOriginsAttachment.CODEC)
             .syncWith(FoxoOriginsAttachment.STREAM_CODEC, AttachmentSyncPredicate.all())
             .copyOnDeath()

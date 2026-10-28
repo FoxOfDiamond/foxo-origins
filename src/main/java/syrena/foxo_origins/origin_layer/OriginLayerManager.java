@@ -50,14 +50,13 @@ public interface OriginLayerManager extends ContentAndTagManager<ResourceLocatio
     default DataResult<List<OriginLayer>> getTagAsResult(ResourceLocation id) {
         return this.getTagAsResult(id, i -> "Unknown originLayer tag: \"" + i + "\"");
     }
-
     default DataResult<ResourceLocation> getKeyAsResult(OriginLayer originLayer) {
 
         List<OriginLayer> values = new ObjectArrayList<>(values().iterator());
         List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
         for (int i=0;i<size();i++) {
 
-            if (values.get(i) == originLayer) {
+            if (values.get(i).equals(originLayer)) {
                 return DataResult.success(keys.get(i));
             }
 

@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import syrena.foxo_origins.attachment.entity.FoxoOriginsAttachment;
 import syrena.foxo_origins.command.OriginCommand;
 import syrena.foxo_origins.network.packet.FoxoOriginsPackets;
@@ -60,6 +61,13 @@ public class FoxoOrigins implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> FoxoOrigins.server = null);
 	}
 
+    public static void logOnce(Level level, String message) {
+
+        if (CACHED_LOGS.add(message.hashCode())) {
+            LOGGER.atLevel(level).log(message);
+        }
+
+    }
 	public static ResourceLocation id(String path) {
 		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}

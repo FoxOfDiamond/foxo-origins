@@ -81,7 +81,6 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
                 .thenAcceptAsync(pair -> this.apply(manager, Profiler.get(), pair.getFirst(), pair.getSecond()), gameExecutor);
 
     }
-
     private void apply(ResourceManager manager, ProfilerFiller profiler, Map<ResourceLocation, JsonWithSource> pendingOriginLayers, Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags) {
 
         OriginLayerReloadEvents.BEFORE.invoker().beforeReload(manager, profiler);

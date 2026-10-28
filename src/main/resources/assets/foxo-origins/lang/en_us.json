@@ -224,6 +224,10 @@
   "commands.foxo-origins.origin.set.failure.origin_not_found": "Unknown origin: %s",
   "commands.foxo-origins.origin.set.failure.layer_not_found": "Unknown layer: %s",
 
+  "commands.foxo-origins.origin.get.failure.no_attachment": "No origin data for entity %s.",
+  "commands.foxo-origins.origin.get.failure.not_set": "No origin set for entity %s in layer %.",
+  "commands.foxo-origins.origin.get.info": "Entity %s has origin %s in layer %s.",
+
   "commands.origin.origin_not_found": "Unknown origin: %s",
   "commands.origin.layer_not_found": "Unknown layer: %s",
   "commands.origin.unregistered_in_layer": "Origin %1$s is not registered in layer %2$s!",
