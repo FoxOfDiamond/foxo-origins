@@ -7,16 +7,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import io.github.eggohito.neo_apoli.context.ContextValidator;
-import io.github.eggohito.neo_apoli.event.ReloadableServerResourcesEvents;
-import io.github.eggohito.neo_apoli.resource.json.JsonFileToIdConverter;
-import io.github.eggohito.neo_apoli.resource.json.JsonWithSource;
-import io.github.eggohito.neo_apoli.util.MiscUtil;
-import io.github.eggohito.neo_apoli.util.Reporter;
-import io.github.eggohito.neo_apoli.util.ResourceLocationUtil;
-import io.github.eggohito.neo_apoli.util.manager.AbstractContentAndTagManager;
+import io.github.eggohito.kaya.context.ContextValidator;
+import io.github.eggohito.kaya.event.ReloadableServerResourcesEvents;
+import io.github.eggohito.kaya.resource.json.JsonFileToIdConverter;
+import io.github.eggohito.kaya.resource.json.JsonWithSource;
+import io.github.eggohito.kaya.util.MiscUtil;
+import io.github.eggohito.kaya.util.Reporter;
+import io.github.eggohito.kaya.util.ResourceLocationUtil;
+import io.github.eggohito.kaya.util.manager.AbstractContentAndTagManager;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -36,6 +38,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.parsers.json.JsonFormat;
 import org.slf4j.Logger;
+import syrena.foxo_origins.FoxoOrigins;
 import syrena.foxo_origins.event.DependencyManager;
 import syrena.foxo_origins.event.OriginLayerPreparation;
 import syrena.foxo_origins.event.OriginLayerReloadEvents;
@@ -55,11 +58,14 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Supplier<ImmutableSet<ResourceLocation>> DEPENDENCIES = Suppliers.memoize(() -> Util.make(ImmutableSet.builder(), DependencyManager.ORIGIN_LAYERS.invoker()::add).build());
 
-    private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN_LAYER).directory(), EnumSet.of(JsonFormat.JSON));
+    private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN_LAYER).directory(), EnumSet.allOf(JsonFormat.class));
     private final TagLoader<OriginLayer> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN_LAYER));
 
     private volatile Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags = Map.of();
     private volatile DynamicOps<JsonElement> ops = JsonOps.INSTANCE;
+
+    private List<ResourceLocation> cachedKeys = null;
+    private List<OriginLayer> cachedValues = null;
 
     @Override
     public ResourceLocation getFabricId() {
@@ -70,7 +76,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         ServerPlayNetworking.send(recipient, new ClientboundUpdateOriginLayersPacket(this.contents, this.tags));
     }
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager, Executor backgroundExecutor, Executor gameExecutor) {
+    public @NotNull CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager, Executor backgroundExecutor, Executor gameExecutor) {
         CompletableFuture<Map<ResourceLocation, JsonWithSource>> pendingOriginLayers = CompletableFuture
                 .supplyAsync(() -> MiscUtil.collectJson(manager, contentLoader, ops, LOGGER::error), backgroundExecutor);
         CompletableFuture<Map<ResourceLocation, List<TagLoader.EntryWithSource>>> pendingTags = CompletableFuture
@@ -113,7 +119,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
 
         OriginLayerReloadEvents.AFTER.invoker().afterReload(manager, profiler);
         LOGGER.info("Finished parsing origin layer from data packs. Parsed {} origin layer(s)", contents.size());
-
+        cacheData();
     }
     private ServerOriginLayerManager withOps(@NotNull HolderLookup.Provider provider) {
         this.ops = provider.createSerializationContext(JsonOps.INSTANCE);
@@ -121,7 +127,6 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
     }
     @Override
     public void init() {
-
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(ID, this::withOps);
         DependencyManager.ORIGIN_LAYERS.register(ID, dependencies -> dependencies.add(OriginManager.ID));
 
@@ -138,25 +143,71 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         ServerPlayConnectionEvents.INIT.register((handler, server) -> this.send(handler.player));
 
         OriginLayerPreparation.EVENT.register(OriginLayerManager.ID, (id, jsonWithSource, directoryPath, ops) -> {
-
             if (jsonWithSource.json() instanceof JsonObject jsonObject) {
                 jsonObject.addProperty("id", id.toString());
             }
-
         });
 
 
         ReloadableServerResourcesEvents.TAGS_UPDATED.addPhaseOrdering(OriginManager.ID, ID);
         ReloadableServerResourcesEvents.TAGS_UPDATED.register(ID, this::finalize);
-
+        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((_,_)->{
+            clearData();
+        });
     }
 
+    public DataResult<ResourceLocation> getKeyAsResult(OriginLayer originLayer) {
+        //FoxoOrigins.LOGGER.info(String.valueOf(size()));
+        if (size() == 0 && cachedValues != null && cachedKeys != null){
+            FoxoOrigins.LOGGER.info("No registered layers found, falling back on cache...");
+            for (int i=0;i< cachedKeys.size();i++) {
+                //FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
+                //FoxoOrigins.LOGGER.info(originLayer.name().toString());
+                if (cachedValues.get(i) == originLayer) {
+                    //FoxoOrigins.LOGGER.info("Equal");
+                    return DataResult.success(cachedKeys.get(i));
+                }
+            }
+        } else {
+            List<OriginLayer> values = new ObjectArrayList<>(values().iterator());
+            List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
+            for (int i = 0; i < size(); i++) {
+                FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
+                FoxoOrigins.LOGGER.info(originLayer.name().toString());
+                if (values.get(i) == originLayer) {
+                    FoxoOrigins.LOGGER.info("Equal");
+                    return DataResult.success(keys.get(i));
+                }
+            }
+        }
+        return DataResult.error(() -> "Unregistered origin layer: " + originLayer.name());
+    }
     private void finalize(ReloadableServerResources resources) {
 
         int prevSize = contents.size();
+        ImmutableMap.Builder<ResourceLocation, OriginLayer> validatedContents = ImmutableMap.builder();
 
         LOGGER.info("Validating {} origin layer(s)...", prevSize);
-        LOGGER.info("{} origin layer(s) don't need to be validated but i don't wanna remove this line so. Origin layer manager contains {} origin layer(s)", prevSize, contents.size());
+
+
+        for (var layer : contents.values()) {
+            ResourceLocation id = OriginLayerManager.getInstance().getKey(layer);
+            try (Reporter.Scoped reporter = new Reporter.Scoped("{\"" + id + "\"}", problems -> LOGGER.error("Found problems while validating {}:\n{}", id.toString(), problems))) {
+
+                ContextValidator validator = new ContextValidator(OriginLayer.PARAMETERS, reporter, MiscUtil.getRegistries(resources));
+
+                layer.validate(validator);
+
+                if (!reporter.hasProblems()) {
+                    validatedContents.put(id, layer);
+                }
+
+            }
+
+        }
+
+        this.contents = validatedContents.build();
+        LOGGER.info("Finished validating {} origin layer(s). Origin layer manager contains {} layer(s)", prevSize, contents.size());
 
         LOGGER.info("Parsing origin layer tags from data packs...");
         this.tags = ImmutableMap.copyOf(tagLoader.build(pendingTags));
@@ -164,5 +215,16 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         LOGGER.info("Finished parsing origin layer tags from data packs. Origin layer manager contains {} origin layer tag(s)", tags.size());
         this.pendingTags = Map.of();
 
+    }
+
+    private void cacheData(){
+        cachedKeys = new ObjectArrayList<>(keys().iterator());
+        cachedValues = new ObjectArrayList<>(values().iterator());
+        FoxoOrigins.LOGGER.info("Cached origin layer data.");
+    }
+    private void clearData(){
+        cachedKeys = null;
+        cachedValues = null;
+        FoxoOrigins.LOGGER.info("Cleared origin layer cache data.");
     }
 }

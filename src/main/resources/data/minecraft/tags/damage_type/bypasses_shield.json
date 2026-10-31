@@ -1,5 +1,6 @@
 {
 	"values": [
-		"neo-origins:hurt_by_water"
+		"neo-origins:hurt_by_water",
+		"neo-origins:hurt_by_splash_water"
 	]
 }

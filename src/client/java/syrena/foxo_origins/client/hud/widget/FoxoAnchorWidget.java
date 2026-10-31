@@ -3,12 +3,6 @@ package syrena.foxo_origins.client.hud.widget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import syrena.foxo_origins.FoxoOrigins;
-
-import java.awt.*;
-import java.util.function.Consumer;
 
 public class FoxoAnchorWidget<E extends AbstractWidget> extends AbstractWidget {
     private final E element;
@@ -24,13 +18,9 @@ public class FoxoAnchorWidget<E extends AbstractWidget> extends AbstractWidget {
         this.setX(x);
         this.setY(y);
     }
-    public E getElement(){
-        return element;
-    }
+
     @Override
     public void setX(int i) {
-        FoxoOrigins.LOGGER.info("aX set");
-        FoxoOrigins.LOGGER.info(String.valueOf(x));
         this.x = i;
         element.setX(Math.round(this.x - this.xAnchor * getWidth()));
     }

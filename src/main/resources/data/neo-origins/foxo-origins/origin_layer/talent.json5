@@ -1,0 +1,9 @@
+{
+  "name": "Talent",
+  "short_description": "What you're good at",
+  "order": 2,
+  "impact": 1,
+  "icon": {
+    "id": "minecraft:nether_star"
+  }
+}

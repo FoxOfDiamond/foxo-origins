@@ -1,10 +1,8 @@
 package syrena.foxo_origins.client.hud.widget;
 
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.layouts.AbstractLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutElement;
-import syrena.foxo_origins.FoxoOrigins;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,6 @@ public class FoxoCenteredLayout implements Layout {
         this.height = h;
     }
     public void arrangeElements(){
-        FoxoOrigins.LOGGER.info(String.valueOf(this.getX()));
         children.forEach(child -> {
             child.repositionChild(this.getX(),this.getY());
         });

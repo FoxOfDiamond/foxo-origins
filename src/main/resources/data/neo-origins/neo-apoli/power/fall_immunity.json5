@@ -1,8 +1,0 @@
-{
-	type: "neo-apoli:modify/damage/invulnerability",
-	active_condition: {
-		type: "neo-apoli:is_damage_source_in_tag",
-		tag: "#minecraft:is_fall",
-		damage_source: "taken_damage/source"
-	}
-}

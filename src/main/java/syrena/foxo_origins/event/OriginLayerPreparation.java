@@ -3,7 +3,7 @@ package syrena.foxo_origins.event;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
-import io.github.eggohito.neo_apoli.resource.json.JsonWithSource;
+import io.github.eggohito.kaya.resource.json.JsonWithSource;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.resources.ResourceLocation;

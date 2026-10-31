@@ -1,9 +1,0 @@
-{
-	type: "neo-apoli:modify/invisibility",
-	render_armor: true,
-	active_condition: {
-		type: "neo-apoli:entity_has_active_power",
-		power: "*:phantomize@toggle",
-		entity: "this"
-	}
-}

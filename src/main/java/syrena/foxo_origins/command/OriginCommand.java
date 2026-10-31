@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static net.minecraft.commands.Commands.*;
 
 public class OriginCommand {
-    public static final ResourceLocation DEFAULT_LAYER = ResourceLocation.fromNamespaceAndPath("neo-origins","foxo_origins");
+    public static final ResourceLocation DEFAULT_LAYER = ResourceLocation.fromNamespaceAndPath("neo-origins","origins");
     public static void register(CommandNode<CommandSourceStack> rootNode, CommandBuildContext context) {
 
         CommandNode<CommandSourceStack> baseNode = literal("origin")

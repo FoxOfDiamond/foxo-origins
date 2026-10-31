@@ -1,8 +1,8 @@
 package syrena.foxo_origins.origin;
 
 import com.mojang.serialization.DataResult;
-import io.github.eggohito.neo_apoli.util.manager.ContentAndTagManager;
-import io.github.eggohito.neo_apoli.util.manager.NeoApoliManagers;
+import io.github.eggohito.kaya.util.manager.ContentAndTagManager;
+import io.github.eggohito.kaya.util.manager.KayaManagers;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 public interface OriginManager extends ContentAndTagManager<ResourceLocation, Origin> {
     ResourceLocation ID = FoxoOrigins.id("manager/origin");
-    Supplier<OriginManager> DEFERRED_INSTANCE = NeoApoliManagers.deferredPhysicalSideSpecific(OriginManager.class, ServerOriginManager::new);
+    Supplier<OriginManager> DEFERRED_INSTANCE = KayaManagers.deferredPhysicalSideSpecific(OriginManager.class, ServerOriginManager::new);
 
     TagEntry.Lookup<Origin> TAG_LOOKUP = new TagEntry.Lookup<>() {
 

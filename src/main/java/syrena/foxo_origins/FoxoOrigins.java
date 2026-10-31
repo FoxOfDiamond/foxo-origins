@@ -1,11 +1,5 @@
 package syrena.foxo_origins;
 
-import com.google.common.collect.ImmutableMap;
-import io.github.eggohito.neo_apoli.NeoApoli;
-import io.github.eggohito.neo_apoli.duck.internal.PowerRecipeDisplayHolder;
-import io.github.eggohito.neo_apoli.duck.internal.ServerCommandStorageHolder;
-import io.github.eggohito.neo_apoli.network.packet.clientbound.ClientboundClearCachedLogsPacket;
-import io.github.eggohito.neo_apoli.network.packet.clientbound.ClientboundUpdatePowersPacket;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.fabricmc.api.ModInitializer;
@@ -13,9 +7,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraft.server.MinecraftServer;

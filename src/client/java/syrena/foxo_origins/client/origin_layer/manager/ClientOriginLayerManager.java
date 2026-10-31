@@ -16,7 +16,6 @@ public class ClientOriginLayerManager extends ServerOriginLayerManager {
 
         ClientPlayNetworking.registerGlobalReceiver(ClientboundUpdateOriginLayersPacket.TYPE, (payload, context) -> this.receive(payload));
         ClientPlayConnectionEvents.DISCONNECT.register(OriginLayerManager.ID, (handler, client) -> this.clear());
-
     }
 
     private void receive(ClientboundUpdateOriginLayersPacket payload) {

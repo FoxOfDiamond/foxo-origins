@@ -1,0 +1,12 @@
+{
+  "name": "Enderian",
+  "description": "Teleport and shit idk",
+  "short_description": "Pearl pearl pearl",
+  "icon": {
+    "id": "minecraft:ender_pearl"
+  },
+  "impact": "3",
+  "powers": [
+    "#neo-origins:enderian"
+  ]
+}

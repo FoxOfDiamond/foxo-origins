@@ -1,7 +1,7 @@
 package syrena.foxo_origins.registry;
 
-import io.github.eggohito.neo_apoli.NeoApoli;
-import io.github.eggohito.neo_apoli.command.argument.PowerArgument;
+import io.github.eggohito.kaya.Kaya;
+import io.github.eggohito.kaya.command.argument.PowerArgument;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;

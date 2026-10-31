@@ -1,6 +1,8 @@
 {
 	"death.attack.neo-origins.hurt_by_water": "%s took a bath for too long",
 	"death.attack.neo-origins.hurt_by_water.player": "%s was put underwater by %s",
+	"death.attack.neo-origins.hurt_by_splash_water": "%s was splashed with too much water",
+	"death.attack.neo-origins.hurt_by_splash_water.player": "%s was splashed with too much water by %s",
 	"enchantment.neo-origins.water_protection": "Water Protection",
 	"power.neo-origins.carnivore.warning": "You cannot eat non-meat foodstuffs!",
 	"power.neo-origins.climbing.disabled": "Climbing is disabled!",

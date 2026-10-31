@@ -1,6 +1,0 @@
-{
-	type: "neo-apoli:inventory",
-	title: "power.neo-origins.shulk_inventory.container_title",
-	menu: "generic_3x3",
-	key: "key.saveToolbarActivator"
-}

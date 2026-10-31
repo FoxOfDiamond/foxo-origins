@@ -1,0 +1,10 @@
+{
+  "name": "Class",
+  "description": "Choose your class.",
+  "short_description": "Cmon.",
+  "order": 1,
+  "impact": 3,
+  "icon": {
+    "id": "minecraft:iron_pickaxe"
+  }
+}

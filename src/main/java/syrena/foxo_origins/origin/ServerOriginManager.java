@@ -9,30 +9,27 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import io.github.eggohito.neo_apoli.context.ContextValidator;
-import io.github.eggohito.neo_apoli.event.ReloadableServerResourcesEvents;
-import io.github.eggohito.neo_apoli.power.manager.PowerManager;
-import io.github.eggohito.neo_apoli.resource.json.JsonFileToIdConverter;
-import io.github.eggohito.neo_apoli.resource.json.JsonWithSource;
-import io.github.eggohito.neo_apoli.util.MiscUtil;
-import io.github.eggohito.neo_apoli.util.Reporter;
-import io.github.eggohito.neo_apoli.util.ResourceLocationUtil;
-import io.github.eggohito.neo_apoli.util.manager.AbstractContentAndTagManager;
+import io.github.eggohito.kaya.context.ContextValidator;
+import io.github.eggohito.kaya.event.ReloadableServerResourcesEvents;
+import io.github.eggohito.kaya.power.manager.PowerManager;
+import io.github.eggohito.kaya.resource.json.JsonFileToIdConverter;
+import io.github.eggohito.kaya.resource.json.JsonWithSource;
+import io.github.eggohito.kaya.util.MiscUtil;
+import io.github.eggohito.kaya.util.Reporter;
+import io.github.eggohito.kaya.util.ResourceLocationUtil;
+import io.github.eggohito.kaya.util.manager.AbstractContentAndTagManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.Util;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.HolderSetCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.profiling.Profiler;
@@ -40,7 +37,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 import org.quiltmc.parsers.json.JsonFormat;
 import org.slf4j.Logger;
-import syrena.foxo_origins.FoxoOrigins;
 import syrena.foxo_origins.event.DependencyManager;
 import syrena.foxo_origins.event.OriginPreparation;
 import syrena.foxo_origins.event.OriginReloadEvents;
@@ -59,7 +55,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Supplier<ImmutableSet<ResourceLocation>> DEPENDENCIES = Suppliers.memoize(() -> Util.make(ImmutableSet.builder(), DependencyManager.ORIGINS.invoker()::add).build());
 
-    private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN).directory(),EnumSet.of(JsonFormat.JSON));
+    private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN).directory(),EnumSet.allOf(JsonFormat.class));
     private final TagLoader<Origin> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN));
 
     private volatile Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags = Map.of();
@@ -74,7 +70,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
         ServerPlayNetworking.send(recipient, new ClientboundUpdateOriginsPacket(this.contents, this.tags));
     }
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager, Executor backgroundExecutor, Executor gameExecutor) {
+    public @NotNull CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager, Executor backgroundExecutor, Executor gameExecutor) {
         CompletableFuture<Map<ResourceLocation, JsonWithSource>> pendingOrigins = CompletableFuture
                 .supplyAsync(() -> MiscUtil.collectJson(manager, contentLoader, ops, LOGGER::error), backgroundExecutor);
         CompletableFuture<Map<ResourceLocation, List<TagLoader.EntryWithSource>>> pendingTags = CompletableFuture
@@ -99,7 +95,6 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
             OriginPreparation.EVENT.invoker().prepare(id, jsonWithSource, contentLoader.directory(), ops);
 
             ResourceLocationUtil.setCurrent(id);
-            LOGGER.info(id.toString());
             MiscUtil.handleResult(
                     Origin.CODEC.parse(ops, jsonWithSource.json()),
                     origin -> builder.put(id,origin),
@@ -109,7 +104,6 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
             );
 
             ResourceLocationUtil.setCurrent(null);
-
         });
 
         this.contents = builder.build();
@@ -166,7 +160,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
             ResourceLocation id = OriginManager.getInstance().getKey(origin);
             try (Reporter.Scoped reporter = new Reporter.Scoped("{\"" + id + "\"}", problems -> LOGGER.error("Found problems while validating {}:\n{}", id.toString(), problems))) {
 
-                ContextValidator validator = new ContextValidator(Origin.PARAMETERS, reporter, MiscUtil.getLookupProvider(resources));
+                ContextValidator validator = new ContextValidator(Origin.PARAMETERS, reporter, MiscUtil.getRegistries(resources));
 
                 origin.validate(validator);
 
