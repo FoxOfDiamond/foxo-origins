@@ -1,0 +1,59 @@
+{
+	type: "kaya:modify/block/break_speed",
+	modifiers: [
+		{
+			type: "kaya:multiply_multiplicative",
+			phase: "total",
+			amount: {
+				type: "kaya:sum",
+				values: [
+					-1,
+					{
+						type: "kaya:product",
+						values: [
+							{
+								type: "kaya:from_int",
+								value: {
+									type: "kaya:effect/amplifier",
+									effect: "minecraft:strength",
+									entity: "this"
+								}
+							},
+							0.50
+						]
+					}
+				]
+			}
+		}
+	],
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:check_block_type",
+				tag: "#neo-origins:natural_stone",
+				block: "mining_block"
+			},
+			{
+				type: "kaya:compare",
+				comparison: {
+					type: "kaya:int",
+					comparator: ">",
+					first: {
+						type: "kaya:adjacent_blocks",
+						condition: {
+							type: "kaya:check_block_type",
+							tag: "#neo-origins:natural_stone",
+							block: "adjacent_block"
+						},
+						position: {
+							type: "kaya:block/position",
+							block: "mining_block"
+						}
+					},
+					second: 2
+				}
+			}
+		]
+	}
+}

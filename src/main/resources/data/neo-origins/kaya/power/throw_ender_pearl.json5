@@ -1,0 +1,95 @@
+{
+	type: "kaya:multiple",
+	cooldown: {
+		type: "kaya:cooldown",
+		hud_element: {
+			type: "kaya:resource_bar",
+			sprite_location: {
+				background: "kaya:resource_bar/7/background",
+				fill: "kaya:resource_bar/7/fill",
+				icon: "kaya:resource_bar/7/icon"
+			}
+		},
+		cooldown: 30
+	},
+	shoot: {
+		type: "kaya:callback/power/tick",
+		rising_action: [
+			{
+				type: "kaya:shoot_entity",
+				entity_type: "minecraft:ender_pearl",
+				position: {
+					type: "kaya:entity/position",
+					entity: "this",
+					anchor: "eyes"
+				},
+				direction: {
+					type: "kaya:entity/view",
+					entity: "this"
+				},
+				velocity: 1.5,
+				inaccuracy: 1.0,
+				shooter: "this"
+			},
+			{
+				type: "kaya:trigger_power_cooldown",
+				power: "*:*@cooldown",
+				entity: "this"
+			},
+			{
+				type: "kaya:play_sound",
+				sound: "minecraft:entity.ender_pearl.throw",
+				category: "neutral",
+				position: {
+					type: "kaya:entity/position",
+					entity: "this",
+					anchor: "eyes"
+				},
+				volume: 0.5,
+				pitch: {
+					type: "kaya:round",
+					value: {
+						type: "kaya:quotient",
+						dividend: 0.4,
+						divisor: {
+							type: "kaya:sum",
+							values: [
+								{
+									type: "kaya:random/uniform",
+									min: 0.0,
+									max: 1.0
+								},
+								0.4
+							]
+						}
+					},
+					places: 1
+				}
+			}
+		],
+		interval: 0,
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:float",
+						comparator: "==",
+						first: {
+							type: "kaya:power/cooldown/progress",
+							power: "*:*@cooldown",
+							entity: "this"
+						},
+						second: 1.0
+					}
+				},
+				{
+					type: "kaya:entity_has_pressed_key",
+					key: "key.foxo-origins.primary_active",
+					entity: "this"
+				}
+			]
+		}
+	}
+}

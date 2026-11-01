@@ -1,0 +1,14 @@
+{
+	type: "kaya:modify/damage/dealt",
+	modifiers: [
+		{
+			type: "kaya:add",
+			phase: "base",
+			amount: 3
+		}
+	],
+	active_condition: {
+		type: "kaya:is_entity_on_fire",
+		entity: "this"
+	}
+}

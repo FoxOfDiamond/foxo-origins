@@ -1,0 +1,15 @@
+{
+	type: "kaya:modify/damage/taken",
+	modifiers: [
+		{
+			type: "kaya:multiply_multiplicative",
+			phase: "base",
+			amount: 0.5
+		}
+	],
+	active_condition: {
+		type: "kaya:check_damage_type",
+		tag: "#neo-origins:kinetic",
+		damage_source: "taken_damage/source"
+	}
+}

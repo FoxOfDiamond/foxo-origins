@@ -1,0 +1,12 @@
+{
+	type: "kaya:multiple",
+	type_tag: {
+		type: "kaya:modify/entity/type_tag",
+		tag: "#minecraft:aquatic"
+	},
+	spawn: {
+		type: "kaya:modify/player/spawn",
+		dimension: "minecraft:overworld",
+		biome: "#c:is_aquatic"
+	}
+}

@@ -1,0 +1,8 @@
+{
+	type: "kaya:modify/damage/invulnerability",
+	active_condition: {
+		type: "kaya:check_damage_type",
+		tag: "#minecraft:is_fall",
+		damage_source: "taken_damage/source"
+	}
+}

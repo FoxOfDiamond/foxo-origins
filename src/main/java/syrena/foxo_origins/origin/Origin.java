@@ -4,12 +4,13 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.eggohito.kaya.condition.Condition;
 import io.github.eggohito.kaya.context.Context;
 import io.github.eggohito.kaya.context.ContextValidatable;
 import io.github.eggohito.kaya.context.ContextValidator;
 import io.github.eggohito.kaya.power.PowerHolder;
 import io.github.eggohito.kaya.power.manager.PowerManager;
+import io.github.eggohito.kaya.provider.custom.bool.BooleanProvider;
+import io.github.eggohito.kaya.provider.custom.bool.ConstantBooleanProvider;
 import io.github.eggohito.kaya.registry.context.KayaContextParameters;
 import io.github.eggohito.kaya.util.tag.TagLike;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import syrena.foxo_origins.util.MiscUtil;
 
 
-public record Origin(Component name, Component description, Component shortDescription, Either<ResourceLocation,ItemStack> icon, int impact, int order, TagLike<PowerHolder<?>> powers, Either<Boolean,Condition> visible, Either<Boolean, Condition> choosable, Either<Boolean, Condition> allowRandom, int loading_priority) implements ContextValidatable {
+public record Origin(Component name, Component description, Component shortDescription, Either<ResourceLocation,ItemStack> icon, int order, int impact, TagLike<PowerHolder<?>> powers, BooleanProvider visible, BooleanProvider choosable, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
             .required(KayaContextParameters.THIS_ENTITY)
             .build();
@@ -36,9 +37,9 @@ public record Origin(Component name, Component description, Component shortDescr
                             Codec.INT.optionalFieldOf("order",0).forGetter(Origin::order),
                             Codec.INT.optionalFieldOf("impact", 0).forGetter(Origin::impact),
                             TagLike.codec(PowerManager.TAG_LOOKUP).optionalFieldOf("powers",TagLike.empty()).forGetter(Origin::powers),
-                            Codec.either(Codec.BOOL, Condition.CODEC).optionalFieldOf("visible",Either.left(true)).forGetter(Origin::visible),
-                            Codec.either(Codec.BOOL, Condition.CODEC).optionalFieldOf("choosable",Either.left(true)).forGetter(Origin::choosable),
-                            Codec.either(Codec.BOOL, Condition.CODEC).optionalFieldOf("allow_random",Either.left(true)).forGetter(Origin::allowRandom),
+                            BooleanProvider.CODEC.optionalFieldOf("visible",new ConstantBooleanProvider(true)).forGetter(Origin::visible),
+                            BooleanProvider.CODEC.optionalFieldOf("choosable",new ConstantBooleanProvider(true)).forGetter(Origin::choosable),
+                            BooleanProvider.CODEC.optionalFieldOf("allow_random",new ConstantBooleanProvider(true)).forGetter(Origin::allowRandom),
                             Codec.INT.optionalFieldOf("loading_priority",0).forGetter(Origin::loading_priority))
                     .apply(instance,Origin::new)
     );
@@ -50,25 +51,25 @@ public record Origin(Component name, Component description, Component shortDescr
             ComponentSerialization.STREAM_CODEC, Origin::description,
             ComponentSerialization.STREAM_CODEC, Origin::shortDescription,
             ByteBufCodecs.either(ResourceLocation.STREAM_CODEC,ItemStack.STREAM_CODEC),Origin::icon,
-            ByteBufCodecs.INT,Origin::impact,
             ByteBufCodecs.INT,Origin::order,
+            ByteBufCodecs.INT,Origin::impact,
             TagLike.streamCodec(PowerManager.TAG_LOOKUP),Origin::powers,
-            ByteBufCodecs.either(ByteBufCodecs.BOOL,Condition.STREAM_CODEC),Origin::visible,
-            ByteBufCodecs.either(ByteBufCodecs.BOOL,Condition.STREAM_CODEC),Origin::choosable,
-            ByteBufCodecs.either(ByteBufCodecs.BOOL,Condition.STREAM_CODEC),Origin::allowRandom,
+            BooleanProvider.STREAM_CODEC,Origin::visible,
+            BooleanProvider.STREAM_CODEC,Origin::choosable,
+            BooleanProvider.STREAM_CODEC,Origin::allowRandom,
             ByteBufCodecs.INT,Origin::loading_priority,
             Origin::new
     );
 
 
     public boolean isVisible(Context context) {
-        return this.visible.right().map(condition -> condition.test(context)).orElse(this.visible().left().get());
+        return this.visible.getBoolean(context);
     }
     public boolean isChoosable(Context context) {
-        return this.choosable.right().map(condition -> condition.test(context)).orElse(this.visible().left().get());
+        return this.choosable.getBoolean(context);
     }
     public boolean allowsRandom(Context context) {
-        return this.allowRandom.right().map(condition -> condition.test(context)).orElse(this.visible().left().get());
+        return this.allowRandom.getBoolean(context);
     }
     @Override
     public @NotNull String toString() {
@@ -77,8 +78,8 @@ public record Origin(Component name, Component description, Component shortDescr
 
     @Override
     public void validate(ContextValidator validator) {
-        this.allowRandom.ifRight(allowRandom -> allowRandom.validate(validator.forChild(".allow_random_condition")));
-        this.choosable.ifRight(choosableCondition -> choosableCondition.validate(validator.forChild(".choosable_condition")));
-        this.visible.ifRight(visibleCondition -> visibleCondition.validate(validator.forChild(".visible_condition")));
+        this.allowRandom.validate(validator.forChild(".allow_random_condition"));
+        this.choosable.validate(validator.forChild(".choosable_condition"));
+        this.visible.validate(validator.forChild(".visible_condition"));
     }
 }

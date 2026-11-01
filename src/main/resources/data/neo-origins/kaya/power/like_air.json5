@@ -1,0 +1,14 @@
+{
+	type: "kaya:modify/air/speed",
+	modifiers: [
+		{
+			type: "kaya:multiply_multiplicative",
+			phase: "base",
+			amount: {
+				type: "kaya:entity/attribute",
+				attribute: "minecraft:movement_speed",
+				entity: "this"
+			}
+		}
+	]
+}

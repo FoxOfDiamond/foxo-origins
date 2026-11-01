@@ -1,0 +1,27 @@
+{
+	"type": "kaya:compare",
+	"comparison": {
+		"type": "kaya:int",
+		"comparator": ">=",
+		"first": {
+			"type": "kaya:blocks_colliding_box",
+			"condition": true,
+			"box": {
+				"type": "kaya:resize",
+				"box": {
+					"type": "kaya:entity/bounds",
+					"entity": "this"
+				},
+				"offset": [
+					0.0,
+					0.0,
+					0.0,
+					0.0,
+					1.0,
+					0.0
+				]
+			}
+		},
+		"second": 1
+	}
+}

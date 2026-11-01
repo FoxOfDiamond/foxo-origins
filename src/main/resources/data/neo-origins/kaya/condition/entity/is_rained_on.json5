@@ -1,0 +1,43 @@
+{
+	type: "kaya:all_of",
+	conditions: [
+		{
+			type: "kaya:compare",
+			comparison: {
+				type: "kaya:float",
+				comparator: ">",
+				first: {
+					type: "kaya:rain_level"
+				},
+				second: 0.2
+			}
+		},
+		{
+			type: "kaya:reference",
+			value: "*:entity/is_exposed_to_sky"
+		},
+		{
+			type: "kaya:provide_context",
+			condition: {
+				type: "kaya:reference",
+				value: "*:*/internal"
+			},
+			parameters: {
+				"*:*/position": {
+					type: "kaya:vec3",
+					value: {
+						type: "kaya:entity/position",
+						entity: "this"
+					}
+				},
+				"*:*/bounding_box": {
+					type: "kaya:box",
+					value: {
+						type: "kaya:entity/bounds",
+						entity: "this"
+					}
+				}
+			}
+		}
+	]
+}

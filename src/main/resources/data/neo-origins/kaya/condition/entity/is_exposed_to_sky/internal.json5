@@ -1,0 +1,30 @@
+{
+	"type": "kaya:any_of",
+	"conditions": [
+		{
+			"type": "kaya:is_exposed_to_sky",
+			"position": "*:entity/is_exposed_to_sky/position"
+		},
+		{
+			"type": "kaya:is_exposed_to_sky",
+			"position": {
+				"type": "kaya:dynamic",
+				"x": {
+					"type": "kaya:vector/component",
+					"vector": "*:entity/is_exposed_to_sky/position",
+					"axis": "x"
+				},
+				"y": {
+					"type": "kaya:box/component",
+					"box": "*:entity/is_exposed_to_sky/bounding_box",
+					"side": "up"
+				},
+				"z": {
+					"type": "kaya:vector/component",
+					"vector": "*:entity/is_exposed_to_sky/position",
+					"axis": "z"
+				}
+			}
+		}
+	]
+}

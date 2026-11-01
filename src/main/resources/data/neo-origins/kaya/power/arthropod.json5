@@ -1,0 +1,5 @@
+{
+	type: "kaya:modify/entity/type_tag",
+	tag: "#minecraft:arthropod",
+	hidden: true
+}

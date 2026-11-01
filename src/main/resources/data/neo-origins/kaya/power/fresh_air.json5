@@ -1,0 +1,41 @@
+{
+	type: "kaya:modify/block/use",
+	action: {
+		type: "kaya:execute_command",
+		source: {
+			type: "kaya:entity",
+			entity: "this"
+		},
+		command: "title @s actionbar {\"translate\": \"power.neo-origins.fresh_air.prevented_sleep\", \"color\": \"red\", \"fallback\": \"You need to get higher up in order to sleep!\"}"
+	},
+	result: "fail",
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:check_block_type",
+				tag: "#minecraft:beds",
+				block: "used_block"
+			},
+			{
+				type: "kaya:compare",
+				comparison: {
+					type: "kaya:int",
+					comparator: "<=",
+					first: {
+						type: "kaya:from_float",
+						value: {
+							type: "kaya:vector/component",
+							vector: {
+								type: "kaya:block/position",
+								block: "used_block"
+							},
+							axis: "y"
+						}
+					},
+					second: 86
+				}
+			}
+		]
+	}
+}

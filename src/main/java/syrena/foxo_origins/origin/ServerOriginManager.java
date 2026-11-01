@@ -167,7 +167,6 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
                 if (!reporter.hasProblems()) {
                     validatedContents.put(id, origin);
                 }
-
             }
 
         }

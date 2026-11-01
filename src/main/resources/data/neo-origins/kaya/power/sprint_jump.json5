@@ -1,0 +1,14 @@
+{
+	type: "kaya:modify/jump",
+	modifiers: [
+		{
+			type: "kaya:multiply_multiplicative",
+			phase: "base",
+			amount: 0.5
+		}
+	],
+	active_condition: {
+		type: "kaya:is_entity_sprinting",
+		entity: "this"
+	}
+}

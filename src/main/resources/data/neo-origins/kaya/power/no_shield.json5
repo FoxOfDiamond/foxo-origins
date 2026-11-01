@@ -1,0 +1,35 @@
+{
+	type: "kaya:multiple",
+	use: {
+		type: "kaya:modify/item/use",
+		on_use_action: {
+			type: "kaya:execute_command",
+			source: {
+				type: "kaya:entity",
+				entity: "this"
+			},
+			command: "title @s actionbar {\"translate\": \"power.neo-origins.no_shield.warning\", \"color\": \"red\", \"fallback\": \"You cannot use shields!\"}"
+		},
+		result: "fail",
+		trigger_type: "start",
+		priority: 1,
+		active_condition: {
+			type: "kaya:item_matches_ingredient",
+			ingredient: "#c:tools/shield",
+			item: "used_item"
+		}
+	},
+	equip: {
+		type: "kaya:modify/item/wearable",
+		slots: {
+			offhand: {
+				type: "kaya:inverted",
+				condition: {
+					type: "kaya:item_matches_ingredient",
+					ingredient: "#c:tools/shield",
+					item: "worn_item"
+				}
+			}
+		}
+	}
+}

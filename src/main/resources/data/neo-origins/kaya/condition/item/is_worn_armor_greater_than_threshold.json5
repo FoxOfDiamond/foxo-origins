@@ -1,0 +1,17 @@
+{
+	"type": "kaya:compare",
+	"comparison": {
+		"type": "kaya:float",
+		"comparator": ">",
+		"first": {
+			"type": "kaya:round",
+			"value": {
+				"type": "kaya:item/attribute",
+				"attribute": "minecraft:armor",
+				"item": "worn_item"
+			},
+			"places": 2
+		},
+		"second": "threshold"
+	}
+}

@@ -1,0 +1,132 @@
+{
+	type: "kaya:multiple",
+	harvest: {
+		type: "kaya:modify/block/harvestable",
+		allow: true,
+		active_condition: {
+			type: "kaya:check_block_type",
+			tag: "#*:cobwebs",
+			block: "mining_block"
+		}
+	},
+	punch_through: {
+		type: "kaya:modify/block/selectable",
+		allow: false,
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:check_block_type",
+					tag: "#*:cobwebs",
+					block: "selected_block"
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:is_entity_sneaking",
+						entity: "this"
+					}
+				}
+			]
+		}
+	},
+	phase_through: {
+		type: "kaya:phasing",
+		render_type: "none",
+		active_condition: {
+			type: "kaya:check_block_type",
+			tag: "#*:cobwebs",
+			block: "phased_block"
+		}
+	},
+	crafting: {
+		type: "kaya:crafting_recipe",
+		recipe: {
+			id: "*:*/crafting",
+			type: "minecraft:crafting_shapeless",
+			ingredients: [
+				"minecraft:string",
+				"minecraft:string"
+			],
+			result: {
+				id: "minecraft:cobweb"
+			}
+		}
+	},
+	sense: {
+		type: "kaya:modify/glowing/other",
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:check_entity_type",
+						tag: "#minecraft:arthropod",
+						entity: "target"
+					}
+				},
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:int",
+						comparator: ">=",
+						first: {
+							type: "kaya:blocks_intersecting_box",
+							condition: {
+								type: "kaya:check_block_type",
+								tag: "#*:cobwebs",
+								block: "block_intersecting_box"
+							},
+							box: {
+								type: "kaya:entity/bounds",
+								entity: "target"
+							}
+						},
+						second: 1
+					}
+				}
+			]
+		}
+	},
+	climbing: {
+		type: "kaya:modify/climbing",
+		holding_condition: {
+			type: "kaya:inverted",
+			condition: {
+				type: "kaya:is_entity_sneaking",
+				entity: "this"
+			}
+		},
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:entity_has_active_power",
+					power: "*:climbing@toggle",
+					entity: "this"
+				},
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:int",
+						comparator: ">=",
+						first: {
+							type: "kaya:blocks_intersecting_box",
+							condition: {
+								type: "kaya:check_block_type",
+								tag: "#*:cobwebs",
+								block: "block_intersecting_box"
+							},
+							box: {
+								type: "kaya:entity/bounds",
+								entity: "this"
+							}
+						},
+						second: 1
+					}
+				}
+			]
+		}
+	}
+}

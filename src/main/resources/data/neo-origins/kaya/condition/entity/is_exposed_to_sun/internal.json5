@@ -1,0 +1,38 @@
+{
+	type: "kaya:compare",
+	comparison: {
+		type: "kaya:float",
+		comparator: ">=",
+		first: {
+			type: "kaya:max",
+			values: [
+				{
+					type: "kaya:brightness",
+					position: "*:entity/is_exposed_to_sun/position"
+				},
+				{
+					type: "kaya:brightness",
+					position: {
+						type: "kaya:dynamic",
+						x: {
+							type: "kaya:vector/component",
+							vector: "*:entity/is_exposed_to_sun/position",
+							axis: "x"
+						},
+						y: {
+							type: "kaya:box/component",
+							box: "*:entity/is_exposed_to_sun/bounding_box",
+							side: "up"
+						},
+						z: {
+							type: "kaya:vector/component",
+							vector: "*:entity/is_exposed_to_sun/position",
+							axis: "z"
+						}
+					}
+				}
+			]
+		},
+		second: 0.5
+	}
+}

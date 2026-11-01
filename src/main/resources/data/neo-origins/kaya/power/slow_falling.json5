@@ -1,0 +1,15 @@
+{
+	type: "kaya:modify/falling",
+	modifiers: [
+		{
+			type: "kaya:set",
+			phase: "base",
+			amount: 0.01
+		}
+	],
+	take_fall_damage: false,
+	active_condition: {
+		type: "kaya:reference",
+		value: "*:entity/is_*_eligible"
+	}
+}

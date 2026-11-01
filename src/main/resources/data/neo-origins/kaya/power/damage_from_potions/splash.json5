@@ -1,0 +1,37 @@
+{
+	type: "kaya:callback/projectile/land",
+	action: {
+		type: "kaya:provide_context",
+		action: {
+			type: "kaya:reference",
+			value: "*:internal/*"
+		},
+		parameters: {
+			"*:damage_from_potions/projectile_area": {
+				type: "kaya:box",
+				value: {
+					type: "kaya:inflate",
+					box: {
+						type: "kaya:entity/bounds",
+						entity: "projectile"
+					},
+					vector: [
+						4.0,
+						2.0,
+						4.0
+					]
+				}
+			},
+			"*:damage_from_potions/projectile": {
+				type: "kaya:entity",
+				value: "projectile"
+			}
+		}
+	},
+	active_condition: {
+		type: "kaya:check_entity_type",
+		key: "minecraft:splash_potion",
+		entity: "projectile"
+	},
+	hidden: true
+}

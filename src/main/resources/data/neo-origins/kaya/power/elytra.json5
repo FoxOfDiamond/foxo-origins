@@ -1,0 +1,16 @@
+{
+	type: "kaya:multiple",
+	capability: {
+		type: "kaya:modify/elytra/flight",
+		allow: true
+	},
+	renderer: {
+		type: "kaya:modify/elytra/render",
+		asset_id: "minecraft:elytra",
+		active_condition: {
+			type: "kaya:entity_has_power",
+			power: "*:*@capability",
+			entity: "this"
+		}
+	}
+}

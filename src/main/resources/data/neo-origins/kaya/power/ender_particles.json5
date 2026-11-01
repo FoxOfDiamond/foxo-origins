@@ -1,0 +1,13 @@
+{
+	type: "kaya:callback/power/tick",
+	action: {
+		type: "kaya:spawn_particles",
+		particle: "minecraft:portal",
+		position: {
+			type: "kaya:entity/position",
+			entity: "this"
+		}
+	},
+	interval: 4,
+	hidden: true
+}

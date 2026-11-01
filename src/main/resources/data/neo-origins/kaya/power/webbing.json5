@@ -1,0 +1,170 @@
+{
+	type: "kaya:multiple",
+	cooldown: {
+		type: "kaya:cooldown",
+		hud_element: {
+			type: "kaya:resource_bar",
+			sprite_location: {
+				background: "kaya:resource_bar/6/background",
+				fill: "kaya:resource_bar/6/fill",
+				icon: "kaya:resource_bar/6/icon"
+			}
+		},
+		cooldown: 100
+	},
+	"shoot_webs": {
+		type: "kaya:callback/power/tick",
+		rising_action: [
+			{
+				type: "kaya:shoot_entity",
+				entity_type: "minecraft:snowball",
+				tag: {
+					Item: {
+						id: "minecraft:cobweb",
+						count: 1,
+						components: {
+							"minecraft:custom_data": {
+								"neo-origins:webbing": {
+									webber: true
+								}
+							}
+						}
+					}
+				},
+				position: {
+					type: "kaya:entity/position",
+					entity: "this",
+					anchor: "eyes"
+				},
+				"direction": {
+					type: "kaya:entity/view",
+					entity: "this"
+				},
+				shooter: "this"
+			},
+			{
+				type: "kaya:trigger_power_cooldown",
+				power: "*:*@cooldown",
+				entity: "this"
+			}
+		],
+		interval: 0,
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:float",
+						comparator: "==",
+						first: {
+							type: "kaya:round",
+							value: {
+								type: "kaya:power/cooldown/progress",
+								power: "*:*@cooldown",
+								entity: "this"
+							},
+							places: 2
+						},
+						second: 1.0
+					}
+				},
+				{
+					type: "kaya:entity_has_pressed_key",
+					key: [
+						"key.foxo-origins.primary_active",
+						"key.attack"
+					],
+					entity: "this"
+				}
+			]
+		}
+	},
+	"no_damage_and_knockback": {
+		type: "kaya:modify/damage/dealt",
+		modifiers: [
+			{
+				type: "kaya:set",
+				phase: "total",
+				amount: -1
+			}
+		],
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:check_damage_type",
+					tag: "#minecraft:is_projectile",
+					damage_source: "dealt_damage/source"
+				},
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:nbt",
+						first: {
+							Item: {
+								components: {
+									"minecraft:custom_data": {
+										"neo-origins:webbing": {
+											webber: true
+										}
+									}
+								}
+							}
+						},
+						second: {
+							type: "kaya:entity",
+							entity: "direct_damaging_entity"
+						}
+					}
+				}
+			]
+		}
+	},
+	"place_webs": {
+		type: "kaya:callback/projectile/land",
+		action: {
+			type: "kaya:place_block",
+			block: "minecraft:cobweb",
+			position: {
+				type: "kaya:entity/position",
+				entity: "projectile"
+			},
+			offset_direction: {
+				type: "kaya:context",
+				parameter: "landed_on_side"
+			}
+		},
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:check_entity_type",
+					tag: "#minecraft:impact_projectiles",
+					entity: "projectile"
+				},
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:nbt",
+						first: {
+							Item: {
+								components: {
+									"minecraft:custom_data": {
+										"neo-origins:webbing": {
+											webber: true
+										}
+									}
+								}
+							}
+						},
+						second: {
+							type: "kaya:entity",
+							entity: "projectile"
+						}
+					}
+				}
+			]
+		}
+	}
+}

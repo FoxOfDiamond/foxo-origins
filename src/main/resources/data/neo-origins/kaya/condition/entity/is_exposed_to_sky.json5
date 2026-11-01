@@ -1,0 +1,23 @@
+{
+	type: "kaya:provide_context",
+	condition: {
+		type: "kaya:reference",
+		value: "*:*/internal"
+	},
+	parameters: {
+		"*:*/position": {
+			type: "kaya:vec3",
+			value: {
+				type: "kaya:entity/position",
+				entity: "this"
+			}
+		},
+		"*:*/bounding_box": {
+			type: "kaya:box",
+			value: {
+				type: "kaya:entity/bounds",
+				entity: "this"
+			}
+		}
+	}
+}

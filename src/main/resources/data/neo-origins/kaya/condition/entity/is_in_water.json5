@@ -1,0 +1,17 @@
+{
+	"type": "kaya:compare",
+	"comparison": {
+		"type": "kaya:float",
+		"comparator": ">",
+		"first": {
+			"type": "kaya:round",
+			"value": {
+				"type": "kaya:entity/fluid_height",
+				"fluid_tag": "#minecraft:water",
+				"entity": "this"
+			},
+			"places": 2
+		},
+		"second": 0.0
+	}
+}

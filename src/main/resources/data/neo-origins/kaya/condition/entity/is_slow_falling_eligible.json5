@@ -1,0 +1,37 @@
+{
+	"type": "kaya:any_of",
+	"conditions": [
+		{
+			"type": "kaya:all_of",
+			"conditions": [
+				{
+					"type": "kaya:is_entity_sneaking",
+					"entity": "this"
+				},
+				{
+					"type": "kaya:is_entity_fall_flying",
+					"entity": "this"
+				}
+			]
+		},
+		{
+			"type": "kaya:all_of",
+			"conditions": [
+				{
+					"type": "kaya:inverted",
+					"condition": {
+						"type": "kaya:is_entity_sneaking",
+						"entity": "this"
+					}
+				},
+				{
+					"type": "kaya:inverted",
+					"condition": {
+						"type": "kaya:is_entity_fall_flying",
+						"entity": "this"
+					}
+				}
+			]
+		}
+	]
+}

@@ -2,17 +2,16 @@ package syrena.foxo_origins.client.screen;
 
 import io.github.eggohito.kaya.context.Context;
 import io.github.eggohito.kaya.registry.context.KayaContextParameters;
-import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.network.chat.Component;
-import syrena.foxo_origins.client.hud.widget.FoxoOriginsList;
-import syrena.foxo_origins.client.hud.widget.FoxoOriginsListEntry;
+import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsList;
+import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsListEntry;
 import syrena.foxo_origins.origin_layer.OriginLayer;
 
 import java.util.List;
 
 public class OriginLayersDisplayScreen extends FoxoOriginsDisplayScreen{
     List<OriginLayer> layers;
-    public OriginLayersDisplayScreen(Component component,List<OriginLayer> layers) {
+    public OriginLayersDisplayScreen(Component component, List<OriginLayer> layers) {
         this.layers = layers;
         super(component);
     }

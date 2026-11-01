@@ -1,0 +1,10 @@
+{
+	type: "kaya:modify/model/color/self",
+	color: {
+		type: "kaya:argb",
+		alpha: 0.5,
+		red:1.0,
+		green: 1.0,
+		blue: 1.0
+	}
+}

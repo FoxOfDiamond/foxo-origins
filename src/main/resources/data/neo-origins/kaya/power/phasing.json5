@@ -1,0 +1,36 @@
+{
+	type: "kaya:phasing",
+	render_type: "blindness",
+	view_distance: 10,
+	phase_down_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:is_entity_sneaking",
+				entity: "this"
+			},
+			{
+				type: "kaya:is_entity_stepping_on_block",
+				entity: "this"
+			}
+		]
+	},
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:entity_has_active_power",
+				power: "*:phantomize@toggle",
+				entity: "this"
+			},
+			{
+				type: "kaya:inverted",
+				condition: {
+					type: "kaya:check_block_type",
+					tag: "#*:unphasable",
+					block: "phased_block"
+				}
+			}
+		]
+	}
+}

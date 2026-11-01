@@ -160,7 +160,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         //FoxoOrigins.LOGGER.info(String.valueOf(size()));
         if (size() == 0 && cachedValues != null && cachedKeys != null){
             FoxoOrigins.LOGGER.info("No registered layers found, falling back on cache...");
-            for (int i=0;i< cachedKeys.size();i++) {
+            for (int i=0;i  < cachedKeys.size();i++) {
                 //FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
                 //FoxoOrigins.LOGGER.info(originLayer.name().toString());
                 if (cachedValues.get(i) == originLayer) {
@@ -172,10 +172,10 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
             List<OriginLayer> values = new ObjectArrayList<>(values().iterator());
             List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
             for (int i = 0; i < size(); i++) {
-                FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
-                FoxoOrigins.LOGGER.info(originLayer.name().toString());
+                //FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
+                //FoxoOrigins.LOGGER.info(originLayer.name().toString());
                 if (values.get(i) == originLayer) {
-                    FoxoOrigins.LOGGER.info("Equal");
+                    //FoxoOrigins.LOGGER.info("Equal");
                     return DataResult.success(keys.get(i));
                 }
             }

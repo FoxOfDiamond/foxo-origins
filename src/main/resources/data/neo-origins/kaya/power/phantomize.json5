@@ -1,0 +1,94 @@
+{
+	type: "kaya:multiple",
+	toggle: {
+		type: "kaya:toggle",
+		key: "key.foxo-origins.primary_active",
+		retain_state: false,
+		active_condition: {
+			type: "kaya:compare",
+			comparison: {
+				type: "kaya:int",
+				comparator: ">",
+				first: {
+					type: "kaya:player/food",
+					entity: "this"
+				},
+				second: 6
+			}
+		}
+	},
+	on_respawn: {
+		type: "kaya:callback/player/respawned",
+		action: {
+			type: "kaya:conditional",
+			condition: {
+				type: "kaya:inverted",
+				condition: {
+					type: "kaya:entity_has_active_power",
+					power: "*:*@toggle",
+					entity: "this"
+				}
+			},
+			on_true: {
+				type: "kaya:toggle_power",
+				power: "*:*@toggle",
+				entity: "this"
+			}
+		}
+	},
+	overlay: {
+		type: "kaya:hud_render",
+		hud_elements: [
+			{
+				type: "kaya:overlay/nausea",
+				sprite: "neo-origins:phantomize/overlay",
+				color: {
+					type: "kaya:dynamic/argb",
+					alpha: 0.75,
+					red: {
+						type: "kaya:linear_interpolated",
+						delta: {
+							type: "kaya:quotient",
+							dividend: {
+								type: "kaya:from_int",
+								value: {
+									type: "kaya:player/food",
+									entity: "this"
+								}
+							},
+							divisor: 20
+						},
+						start: 0.7,
+						end: 0.2
+					},
+					green: {
+						type: "kaya:linear_interpolated",
+						delta: {
+							type: "kaya:quotient",
+							dividend: {
+								type: "kaya:from_int",
+								value: {
+									type: "kaya:player/food",
+									entity: "this"
+								}
+							},
+							divisor: 20
+						},
+						start: 0.2,
+						end: 0.4
+					},
+					blue: 0.2
+				},
+				render_phase: "below_hud",
+				should_render: {
+					type: "kaya:condition_result",
+					condition: {
+						type: "kaya:entity_has_active_power",
+						power: "*:*@toggle",
+						entity: "this"
+					}
+				}
+			}
+		]
+	}
+}

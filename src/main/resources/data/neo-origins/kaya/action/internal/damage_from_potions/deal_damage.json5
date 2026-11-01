@@ -1,0 +1,69 @@
+{
+	type: "kaya:damage_entity",
+	damage_type: "*:hurt_by_splash_water",
+	amount: {
+		type: "kaya:difference",
+		values: [
+			{
+				type: "kaya:box/size",
+				box: "*:damage_from_potions/projectile_area"
+			},
+			{
+				type: "kaya:round",
+				value: {
+					type: "kaya:distance_between_vectors",
+					first: {
+						type: "kaya:entity/position",
+						entity: "*:damage_from_potions/projectile"
+					},
+					second: {
+						type: "kaya:dynamic",
+						x: {
+							type: "kaya:vector/component",
+							vector: "*:damage_from_potions/victim_feet",
+							axis: "x"
+						},
+						y: {
+							type: "kaya:quotient",
+							dividend: {
+								type: "kaya:sum",
+								values: [
+									{
+										type: "kaya:vector/component",
+										vector: "*:damage_from_potions/victim_eyes",
+										axis: "y"
+									},
+									{
+										type: "kaya:vector/component",
+										vector: "*:damage_from_potions/victim_feet",
+										axis: "y"
+									}
+								]
+							},
+							divisor: 2
+						},
+						z: {
+							type: "kaya:vector/component",
+							vector: "*:damage_from_potions/victim_feet",
+							axis: "z"
+						}
+					}
+				},
+				places: 2
+			},
+			{
+				type: "kaya:quotient",
+				dividend: {
+					type: "kaya:from_int",
+					value: {
+						type: "kaya:equipped_enchantment_level",
+						enchantment: "*:water_protection",
+						entity: "*:damage_from_potions/victim"
+					}
+				},
+				divisor: 1.5
+			}
+		]
+	},
+	victim: "*:damage_from_potions/victim"
+}

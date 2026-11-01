@@ -4,10 +4,11 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.eggohito.kaya.condition.Condition;
 import io.github.eggohito.kaya.context.Context;
 import io.github.eggohito.kaya.context.ContextValidatable;
 import io.github.eggohito.kaya.context.ContextValidator;
+import io.github.eggohito.kaya.provider.custom.bool.BooleanProvider;
+import io.github.eggohito.kaya.provider.custom.bool.ConstantBooleanProvider;
 import io.github.eggohito.kaya.registry.context.KayaContextParameters;
 import io.github.eggohito.kaya.util.tag.TagLike;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -24,7 +25,7 @@ import syrena.foxo_origins.util.MiscUtil;
 import java.util.Optional;
 
 
-public record OriginLayer(Component name, Component description, Component shortDescription, Either<ResourceLocation,ItemStack> icon, int order, int impact, TagLike<Origin> origins, Optional<Origin> defaultOrigin, Either<Boolean,Condition> visible, Either<Boolean,Condition> allowRandom, int loading_priority) implements ContextValidatable {
+public record OriginLayer(Component name, Component description, Component shortDescription, Either<ResourceLocation,ItemStack> icon, int order, int impact, TagLike<Origin> origins, Optional<Origin> defaultOrigin, BooleanProvider visible, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
             .required(KayaContextParameters.THIS_ENTITY)
             .build();
@@ -38,8 +39,8 @@ public record OriginLayer(Component name, Component description, Component short
                             Codec.INT.optionalFieldOf("impact", 0).forGetter(OriginLayer::impact),
                             TagLike.codec(OriginManager.TAG_LOOKUP).optionalFieldOf("origins",TagLike.empty()).forGetter(OriginLayer::origins),
                             Origin.CODEC.optionalFieldOf("default_origin").forGetter(OriginLayer::defaultOrigin),
-                            Codec.either(Codec.BOOL,Condition.CODEC).optionalFieldOf("visible",Either.left(true)).forGetter(OriginLayer::visible),
-                            Codec.either(Codec.BOOL,Condition.CODEC).optionalFieldOf("allow_random",Either.left(true)).forGetter(OriginLayer::allowRandom),
+                            BooleanProvider.CODEC.optionalFieldOf("visible", new ConstantBooleanProvider(true)).forGetter(OriginLayer::visible),
+                            BooleanProvider.CODEC.optionalFieldOf("allow_random",new ConstantBooleanProvider(true)).forGetter(OriginLayer::allowRandom),
                             Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(OriginLayer::loading_priority))
                     .apply(instance, OriginLayer::new)
 
@@ -56,21 +57,21 @@ public record OriginLayer(Component name, Component description, Component short
             ByteBufCodecs.INT, OriginLayer::impact,
             TagLike.streamCodec(OriginManager.TAG_LOOKUP),OriginLayer::origins,
             ByteBufCodecs.optional(Origin.STREAM_CODEC),OriginLayer::defaultOrigin,
-            ByteBufCodecs.either(ByteBufCodecs.BOOL,Condition.STREAM_CODEC), OriginLayer::visible,
-            ByteBufCodecs.either(ByteBufCodecs.BOOL,Condition.STREAM_CODEC), OriginLayer::allowRandom,
+            BooleanProvider.STREAM_CODEC, OriginLayer::visible,
+            BooleanProvider.STREAM_CODEC, OriginLayer::allowRandom,
             ByteBufCodecs.INT, OriginLayer::loading_priority,
             OriginLayer::new
     );
 
     public boolean isVisible(Context context) {
-        return this.visible.right().map(condition -> condition.test(context)).orElse(this.visible().left().get());
+        return this.visible.getBoolean(context);
     }
     public boolean allowsRandom(Context context) {
-        return this.allowRandom.right().map(condition -> condition.test(context)).orElse(this.visible().left().get());
+        return this.allowRandom.getBoolean(context);
     }
     @Override
     public void validate(ContextValidator validator) {
-        this.allowRandom.ifRight(allowRandom -> allowRandom.validate(validator.forChild(".allow_random_condition")));
-        this.visible.ifRight(visibleCondition -> visibleCondition.validate(validator.forChild(".visible_condition")));
+        this.allowRandom.validate(validator.forChild(".allow_random_condition"));
+        this.visible.validate(validator.forChild(".visible_condition"));
     }
 }

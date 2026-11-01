@@ -1,0 +1,92 @@
+{
+	type: "kaya:multiple",
+	storage: {
+		type: "kaya:nbt"
+	},
+	init: {
+		type: "kaya:callback/power/granted",
+		action: {
+			type: "kaya:execute_command",
+			source: {
+				type: "kaya:entity",
+				entity: "this"
+			},
+			command: "function neo-origins:claustrophobia/setup"
+		}
+	},
+	tick_stacks: {
+		type: "kaya:callback/power/tick",
+		action: [
+			{
+				type: "kaya:execute_command",
+				source: {
+					type: "kaya:entity",
+					entity: "this"
+				},
+				command: "function neo-origins:claustrophobia/tick"
+			},
+			{
+				type: "kaya:apply_effects",
+				effects: [
+					{
+						id: "minecraft:weakness",
+						ambient: true,
+						show_particles: false,
+						show_icon: true
+					},
+					{
+						id: "minecraft:slowness",
+						ambient: true,
+						show_particles: false,
+						show_icon: true
+					}
+				],
+				entity: "this"
+			}
+		],
+		interval: 10
+	},
+	modify_duration: {
+		type: "kaya:modify/effect/duration",
+		modifiers: [
+			{
+				type: "kaya:set",
+				phase: "total",
+				amount: {
+					type: "kaya:max",
+					values: [
+						0,
+						{
+							type: "kaya:product",
+							values: [
+								{
+									type: "kaya:nbt",
+									source: {
+										type: "kaya:power",
+										power: "*:*@storage",
+										entity: "this"
+									},
+									path: "duration_per_stack"
+								},
+								{
+									type: "kaya:nbt",
+									source: {
+										type: "kaya:power",
+										power: "*:*@storage",
+										entity: "this"
+									},
+									path: "stacks"
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		active_condition: {
+			type: "kaya:check_effect_type",
+			tag: "#*:*",
+			effect: "applied_effect"
+		}
+	}
+}

@@ -1,0 +1,176 @@
+{
+	type: "kaya:multiple",
+	cooldown: {
+		type: "kaya:cooldown",
+		hud_element: {
+			type: "kaya:resource_bar",
+			sprite_location: {
+				background: "kaya:resource_bar/5/background",
+				fill: "kaya:resource_bar/5/fill",
+				icon: "kaya:resource_bar/5/icon"
+			}
+		},
+		cooldown: 600
+	},
+	boost_lifetime: {
+		type: "kaya:cooldown",
+		hud_element: {
+			type: "kaya:resource_bar",
+			should_render: false
+		},
+		cooldown: 40
+	},
+	run: {
+		type: "kaya:callback/power/tick",
+		rising_action: [
+			{
+				type: "kaya:conditional",
+				condition: {
+					type: "kaya:is_entity_fall_flying",
+					entity: "this"
+				},
+				on_true: {
+					type: "kaya:add_velocity",
+					method: "single",
+					velocity: [
+						0.0,
+						0.0,
+						1.5
+					],
+					space: "local",
+					entity: "this"
+				},
+				on_false: {
+					type: "kaya:add_velocity",
+					method: "single",
+					velocity: [
+						0.0,
+						2.0,
+						0.0
+					],
+					space: "world",
+					entity: "this"
+				}
+			},
+			{
+				type: "kaya:play_sound",
+				sound: "minecraft:entity.bat.takeoff",
+				category: "neutral",
+				position: {
+					type: "kaya:entity/position",
+					entity: "this"
+				},
+				volume: 0.5,
+				pitch: {
+					type: "kaya:clamped",
+					value: {
+						type: "kaya:round",
+						value: {
+							type: "kaya:quotient",
+							dividend: 0.4,
+							divisor: {
+								type: "kaya:random/uniform",
+								min: 0.0,
+								max: 1.0
+							}
+						},
+						places: 1
+					},
+					min: 0.0,
+					max: 1.0
+				}
+			},
+			{
+				type: "kaya:spawn_particles",
+				particle: "minecraft:poof",
+				position: {
+					type: "kaya:entity/position",
+					entity: "this"
+				},
+				spread: [
+					0.0,
+					0.0,
+					0.0
+				],
+				speed: 0.3,
+				count: 100,
+				force: true
+			},
+			{
+				type: "kaya:trigger_power_cooldown",
+				power: "*:*@cooldown",
+				entity: "this"
+			},
+			{
+				type: "kaya:trigger_power_cooldown",
+				power: "*:*@boost_lifetime",
+				entity: "this"
+			}
+		],
+		interval: 0,
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:float",
+						comparator: "==",
+						first: {
+							type: "kaya:round",
+							value: {
+								type: "kaya:power/cooldown/progress",
+								power: "*:*@cooldown",
+								entity: "this"
+							},
+							places: 2
+						},
+						second: 1.0
+					}
+				},
+				{
+					type: "kaya:entity_has_pressed_key",
+					key: "key.foxo-origins.primary_active",
+					entity: "this"
+				}
+			]
+		}
+	},
+	boost_particles: {
+		type: "kaya:callback/power/tick",
+		action: {
+			type: "kaya:spawn_particles",
+			particle: "minecraft:poof",
+			position: {
+				type: "kaya:entity/position",
+				entity: "this"
+			},
+			spread: [
+				0.0,
+				0.0,
+				0.0
+			],
+			speed: 0,
+			count: 1,
+			force: true
+		},
+		interval: 1,
+		active_condition: {
+			type: "kaya:compare",
+			comparison: {
+				type: "kaya:float",
+				comparator: "<",
+				first: {
+					type: "kaya:round",
+					value: {
+						type: "kaya:power/cooldown/progress",
+						power: "*:*@boost_lifetime",
+						entity: "this"
+					},
+					places: 2
+				},
+				second: 1.0
+			}
+		}
+	}
+}

@@ -1,0 +1,16 @@
+{
+	type: "kaya:modify/item/use",
+	on_use_action: {
+		type: "kaya:gain_air",
+		value: 60,
+		entity: "this"
+	},
+	result: "pass",
+	trigger_type: "finish",
+	active_condition: {
+		type: "kaya:item_matches_ingredient",
+		ingredient: "minecraft:potion",
+		item: "used_item"
+	},
+	hidden: true
+}

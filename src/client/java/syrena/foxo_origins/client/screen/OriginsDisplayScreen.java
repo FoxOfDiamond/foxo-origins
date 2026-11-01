@@ -1,20 +1,22 @@
 package syrena.foxo_origins.client.screen;
 
+import com.mojang.datafixers.util.Either;
 import io.github.eggohito.kaya.context.Context;
 import io.github.eggohito.kaya.registry.context.KayaContextParameters;
-import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.network.chat.Component;
-import syrena.foxo_origins.client.hud.widget.FoxoOriginsList;
-import syrena.foxo_origins.client.hud.widget.FoxoOriginsListEntry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsList;
+import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsListEntry;
 import syrena.foxo_origins.origin.Origin;
 
 import java.util.List;
 
 public class OriginsDisplayScreen extends FoxoOriginsDisplayScreen{
     List<Origin> origins;
-    public OriginsDisplayScreen(Component component, List<Origin> origins) {
+    public OriginsDisplayScreen(Component component, Either<ResourceLocation, ItemStack> icon, List<Origin> origins) {
         this.origins = origins;
-        super(component);
+        super(component, icon);
     }
 
     @Override

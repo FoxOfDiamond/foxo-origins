@@ -1,0 +1,5 @@
+{
+	type: "kaya:modify/player/spawn",
+	dimension: "minecraft:the_nether",
+	biome: "#c:is_nether"
+}

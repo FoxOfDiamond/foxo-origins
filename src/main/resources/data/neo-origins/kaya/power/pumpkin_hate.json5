@@ -1,0 +1,93 @@
+{
+	type: "kaya:multiple",
+	prevent_eating: {
+		type: "kaya:modify/item/use",
+		on_use_action: {
+			type: "kaya:execute_command",
+			source: {
+				type: "kaya:entity",
+				entity: "this"
+			},
+			command: "title @s actionbar {\"translate\": \"power.neo-origins.pumpkin_hate.warning\", \"color\": \"red\", \"fallback\": \"You cannot eat foodstuffs that are pumpkin-like!\"}"
+		},
+		result: "fail",
+		trigger_type: "start",
+		priority: 1,
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:item_matches_predicate",
+					predicate: "*[minecraft:food]",
+					item: "used_item"
+				},
+				{
+					type: "kaya:item_matches_predicate",
+					predicate: "#neo-origins:pumpkin_like/food",
+					item: "used_item"
+				}
+			]
+		}
+	},
+	partial_visibility: {
+		type: "kaya:modify/model/color/other",
+		color: {
+			type: "kaya:dynamic/argb",
+			alpha: {
+				type: "kaya:linear_interpolated",
+				delta: {
+					type: "kaya:quotient",
+					dividend: {
+						type: "kaya:min",
+						values: [
+							{
+								type: "kaya:distance_between_vectors",
+								first: {
+									type: "kaya:entity/position",
+									entity: "actor"
+								},
+								second: {
+									type: "kaya:entity/position",
+									entity: "target"
+								}
+							},
+							{
+								type: "kaya:quotient",
+								dividend: {
+									type: "kaya:entity/attribute",
+									attribute: "minecraft:entity_interaction_range",
+									entity: "actor"
+								},
+								divisor: 1.5
+							}
+						]
+					},
+					divisor: {
+						type: "kaya:quotient",
+						dividend: {
+							type: "kaya:entity/attribute",
+							attribute: "minecraft:entity_interaction_range",
+							entity: "actor"
+						},
+						divisor: 1.5
+					}
+				},
+				start: 1.0,
+				end: 0.0
+			},
+			red: 1.0,
+			green: 1.0,
+			blue: 1.0
+		},
+		active_condition: {
+			type: "kaya:entity_has_item_equipped",
+			equipped_condition: {
+				type: "kaya:item_matches_predicate",
+				predicate: "#neo-origins:pumpkin_like/equipment",
+				item: "equipped_item"
+			},
+			slot: "head",
+			entity: "target"
+		}
+	}
+}

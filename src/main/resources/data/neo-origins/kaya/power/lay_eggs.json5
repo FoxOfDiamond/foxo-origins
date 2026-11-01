@@ -1,0 +1,22 @@
+{
+	type: "kaya:callback/player/wake_up",
+	action: [
+		{
+			type: "kaya:give_items",
+			stacks: [
+				{
+					id: "minecraft:egg"
+				}
+			],
+			entity: "this"
+		},
+		{
+			type: "kaya:execute_command",
+			source: {
+				type: "kaya:entity",
+				entity: "this"
+			},
+			command: "/playsound minecraft:entity.chicken.egg"
+		}
+	]
+}

@@ -1,0 +1,25 @@
+{
+	type: "kaya:callback/power/tick",
+	action: {
+		type: "kaya:set_entity_on_fire",
+		ticks: 120,
+		entity: "this"
+	},
+	interval: 20,
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:reference",
+				value: "*:entity/is_exposed_to_sun"
+			},
+			{
+				type: "kaya:inverted",
+				condition: {
+					type: "kaya:is_entity_invisible",
+					entity: "this"
+				}
+			}
+		]
+	}
+}

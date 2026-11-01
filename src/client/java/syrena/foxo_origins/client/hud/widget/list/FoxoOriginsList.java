@@ -1,4 +1,4 @@
-package syrena.foxo_origins.client.hud.widget;
+package syrena.foxo_origins.client.hud.widget.list;
 
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
@@ -44,9 +44,7 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
                 double scaledScroll = Math.max(1.0, clampedScroll / (scrollBarHeight() - this.scrollerHeight()));
                 this.setScrollAmount(this.scrollAmount() + dY * scaledScroll);
             }
-
         });
-
     }
 
     public void addEntryOrdered(FoxoOriginsListEntry entry){
@@ -60,20 +58,21 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
     }
     @Override
     protected int contentHeight() {
-        return getHeightToIndex(this.getItemCount());
+        return getHeightToIndex(this.getItemCount()) - FoxoOriginsDisplayScreen.LIST_SEPARATOR_HEIGHT;
     }
 
     private int getHeightToIndex(int index){
-        int totalHeight = 0;
-        for (int i = 0; i < Math.min(getItemCount(),index); i++) {
+        index = Math.min(getItemCount(),index);
+        int totalHeight = (FoxoOriginsDisplayScreen.ENTRY_HEIGHT + FoxoOriginsDisplayScreen.LIST_SEPARATOR_HEIGHT) * index;
+        for (int i = 0; i < index; i++) {
             FoxoOriginsListEntry entry = this.getEntry(i);
-            totalHeight += FoxoOriginsDisplayScreen.ENTRY_HEIGHT + FoxoOriginsDisplayScreen.LIST_SEPARATOR_HEIGHT + entry.getDescriptionHeight();
+            totalHeight +=  entry.getDescriptionHeight();
         }
-        return Math.max(totalHeight,0);
+        return totalHeight;
     }
     @Override
     protected double scrollRate() {
-        return 10;
+        return FoxoOriginsDisplayScreen.ENTRY_HEIGHT/2d;
     }
     public final FoxoOriginsListEntry entryAtPosition(double mouseX, double mouseY) {
         if (mouseX < getX() || mouseX > getX() + getWidth()) return null;
@@ -120,7 +119,7 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
             int rowTop = this.getRowTop(i);
             int rowBottom = this.getRowBottom(i);
             if (rowBottom >= this.getY() && rowTop <= this.getBottom()) {
-                this.getEntry(i).render(guiGraphics, i == (itemCount-1), rowTop, rowLeft, rowWidth, Objects.equals(this.hovered, this.getEntry(i)));
+                this.getEntry(i).render(guiGraphics, mouseX, mouseY, i == (itemCount-1), rowTop, rowLeft, rowWidth, Objects.equals(this.hovered, this.getEntry(i)));
             }
         }
     }
@@ -129,21 +128,9 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         FoxoOriginsListEntry entry = entryAtPosition(mouseX,mouseY);
         if (mouseButton == 0 && entry != null){
-            this.setFocused(entry);
-            this.setDragging(true);
+            entry.mouseClicked(mouseX,mouseY,mouseButton);
+            setScrollAmount(Math.min(scrollAmount(),maxScrollAmount()));
             return true;
-        }
-        return false;
-    }
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        if (mouseButton == 0 && this.isDragging()){
-            this.setDragging(false);
-            if (this.getFocused() != null && this.getFocused() == entryAtPosition(mouseX,mouseY)){
-                this.getFocused().mouseReleased(mouseX,mouseY,mouseButton);
-                return true;
-            }
-            return false;
         }
         return false;
     }
@@ -178,7 +165,7 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
             this.scrolling = true;
             if (mouseY < this.scrollBarY()
                 || mouseY >= this.scrollBarY() + scrollerSize().y()) {
-                setScrollAmount((mouseY-this.getY() - scrollbarOffset().y- (double) scrollerHeight() /2)/(scrollBarHeight()-scrollerHeight())*maxScrollAmount());
+                setScrollAmount((mouseY-this.getY() - scrollbarOffset().y - (double) scrollerHeight() /2)/(scrollBarHeight()-scrollerHeight())*maxScrollAmount());
             }
         } else {
             this.scrolling = false;

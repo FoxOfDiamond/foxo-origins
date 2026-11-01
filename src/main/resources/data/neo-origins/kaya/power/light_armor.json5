@@ -1,0 +1,109 @@
+{
+	type: "kaya:modify/item/wearable",
+	slots: {
+		head: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:item_matches_ingredient",
+					ingredient: "#minecraft:head_armor",
+					item: "worn_item"
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:provide_context",
+						condition: {
+							type: "kaya:reference",
+							value: "*:item/is_worn_armor_greater_than_threshold"
+						},
+						parameters: {
+							threshold: {
+								type: "kaya:float",
+								value: 2.0
+							}
+						}
+					}
+				}
+			]
+		},
+		chest: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:item_matches_ingredient",
+					ingredient: "#minecraft:chest_armor",
+					item: "worn_item"
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:provide_context",
+						condition: {
+							type: "kaya:reference",
+							value: "*:item/is_worn_armor_greater_than_threshold"
+						},
+						parameters: {
+							threshold: {
+								type: "kaya:float",
+								value: 5.0
+							}
+						}
+					}
+				}
+			]
+		},
+		legs: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:item_matches_ingredient",
+					ingredient: "#minecraft:leg_armor",
+					item: "worn_item"
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:provide_context",
+						condition: {
+							type: "kaya:reference",
+							value: "*:item/is_worn_armor_greater_than_threshold"
+						},
+						parameters: {
+							threshold: {
+								type: "kaya:float",
+								value: 4.0
+							}
+						}
+					}
+				}
+			]
+		},
+		feet: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:item_matches_ingredient",
+					ingredient: "#minecraft:foot_armor",
+					item: "worn_item"
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:provide_context",
+						condition: {
+							type: "kaya:reference",
+							value: "*:item/is_worn_armor_greater_than_threshold"
+						},
+						parameters: {
+							threshold: {
+								type: "kaya:float",
+								value: 1.0
+							}
+						}
+					}
+				}
+			]
+		}
+	}
+}

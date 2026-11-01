@@ -1,0 +1,43 @@
+{
+	type: "kaya:area_of_effect",
+	area: {
+		type: "box",
+		target: "entity",
+		shape: "cube",
+		box: "*:damage_from_potions/projectile_area"
+	},
+	action: {
+		type: "kaya:provide_context",
+		action: {
+			type: "kaya:reference",
+			value: "*:internal/damage_from_potions/deal_damage"
+		},
+		parameters: {
+			"*:damage_from_potions/victim": {
+				type: "kaya:entity",
+				value: "entity_in_area"
+			},
+			"*:damage_from_potions/victim_eyes": {
+				type: "kaya:vec3",
+				value: {
+					type: "kaya:entity/position",
+					entity: "entity_in_area",
+					anchor: "eyes"
+				}
+			},
+			"*:damage_from_potions/victim_feet": {
+				type: "kaya:vec3",
+				value: {
+					type: "kaya:entity/position",
+					entity: "entity_in_area",
+					anchor: "feet"
+				}
+			}
+		}
+	},
+	condition: {
+		type: "kaya:entity_has_power",
+		power: "*:damage_from_potions",
+		entity: "entity_in_area"
+	}
+}

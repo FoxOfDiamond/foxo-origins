@@ -1,0 +1,32 @@
+{
+	"type": "kaya:any_of",
+	"conditions": [
+		{
+			"type": "kaya:check_precipitation",
+			"precipitation": "rain",
+			"position": "*:entity/is_rained_on/position"
+		},
+		{
+			"type": "kaya:check_precipitation",
+			"precipitation": "rain",
+			"position": {
+				"type": "kaya:dynamic",
+				"x": {
+					"type": "kaya:vector/component",
+					"vector": "*:entity/is_rained_on/position",
+					"axis": "x"
+				},
+				"y": {
+					"type": "kaya:box/component",
+					"box": "*:entity/is_rained_on/bounding_box",
+					"side": "up"
+				},
+				"z": {
+					"type": "kaya:vector/component",
+					"vector": "*:entity/is_rained_on/position",
+					"axis": "z"
+				}
+			}
+		}
+	]
+}

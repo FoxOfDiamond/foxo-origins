@@ -1,0 +1,8 @@
+{
+	type: "kaya:modify/effect/immunity",
+	active_condition: {
+		type: "kaya:check_effect_type",
+		tag: "#*:*",
+		effect: "applied_effect"
+	}
+}

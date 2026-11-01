@@ -1,0 +1,10 @@
+{
+	type: "kaya:modify/exhaustion",
+	modifiers: [
+		{
+			type: "kaya:multiply_multiplicative",
+			phase: "base",
+			amount: 0.6
+		}
+	]
+}

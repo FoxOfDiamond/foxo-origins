@@ -1,0 +1,62 @@
+{
+	type: "kaya:multiple",
+	underwater: {
+		type: "kaya:modify/attribute/vanilla",
+		modifiers: [
+			{
+				attribute: "minecraft:submerged_mining_speed",
+				id: "*:*",
+				operation: "add_multiplied_total",
+				amount: 4.0
+			}
+		],
+		tick_rate: 5,
+		active_condition: {
+			type: "kaya:compare",
+			comparison: {
+				type: "kaya:int",
+				comparator: "==",
+				first: {
+					type: "kaya:equipped_enchantment_level",
+					enchantment: "minecraft:aqua_affinity",
+					entity: "this"
+				},
+				second: 0
+			}
+		}
+	},
+	ungrounded: {
+		type: "kaya:modify/block/break_speed",
+		modifiers: [
+			{
+				type: "kaya:multiply_multiplicative",
+				phase: "total",
+				amount: 4
+			}
+		],
+		condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:compare",
+					comparison: {
+						type: "kaya:float",
+						comparator: ">",
+						first: {
+							type: "kaya:entity/fluid_height",
+							fluid: "minecraft:water",
+							entity: "this"
+						},
+						second: 0
+					}
+				},
+				{
+					type: "kaya:inverted",
+					condition: {
+						type: "kaya:is_entity_on_block"
+					}
+				}
+			]
+		}
+	}
+}

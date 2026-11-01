@@ -1,0 +1,26 @@
+{
+	type: "kaya:modify/damage/taken",
+	modifiers: [
+		{
+			type: "kaya:add",
+			phase: "base",
+			amount: 3
+		}
+	],
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:check_damage_type",
+				tag: "#minecraft:is_projectile",
+				damage_source: "taken_damage/source"
+			},
+			{
+				type: "kaya:check_entity_type",
+				key: "minecraft:snowball",
+				entity: "direct_damaging_entity"
+			}
+		]
+	},
+	hidden: true
+}

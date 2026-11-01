@@ -1,0 +1,101 @@
+{
+	type: "kaya:multiple",
+	toggle: {
+		type: "kaya:toggle",
+		action: {
+			type: "kaya:execute_command",
+			source: {
+				type: "kaya:entity",
+				entity: "this"
+			},
+			command: {
+				type: "kaya:join",
+				strings: [
+					"title @s actionbar",
+					{
+						type: "kaya:conditional",
+						condition: {
+							type: "kaya:entity_has_active_power",
+							power: "*:*@toggle",
+							entity: "this"
+						},
+						on_true: "{\"translate\": \"power.neo-origins.climbing.enabled\", \"color\": \"green\", \"fallback\": \"Climbing is enabled!\"}",
+						on_false: "{\"translate\": \"power.neo-origins.climbing.disabled\", \"color\": \"red\", \"fallback\": \"Climbing is disabled!\"}"
+					}
+				],
+				separator: " "
+			}
+		},
+		key: "key.foxo-origins.secondary_active"
+	},
+	run: {
+		type: "kaya:modify/climbing",
+		active_condition: {
+			type: "kaya:all_of",
+			conditions: [
+				{
+					type: "kaya:entity_has_active_power",
+					power: "*:*@toggle",
+					entity: "this"
+				},
+				{
+					type: "kaya:any_of",
+					conditions: [
+						{
+							type: "kaya:all_of",
+							conditions: [
+								{
+									type: "kaya:inverted",
+									condition: {
+										type: "kaya:is_entity_sneaking",
+										entity: "this"
+									}
+								},
+								{
+									type: "kaya:is_entity_horizontally_colliding",
+									entity: "this"
+								}
+							]
+						},
+						{
+							type: "kaya:all_of",
+							conditions: [
+								{
+									type: "kaya:is_entity_sneaking",
+									entity: "this"
+								},
+								{
+									type: "kaya:compare",
+									comparison: {
+										type: "kaya:int",
+										comparator: ">=",
+										first: {
+											type: "kaya:blocks_colliding_box",
+											condition: true,
+											box: {
+												type: "kaya:resize",
+												box: {
+													type: "kaya:entity/bounds",
+													entity: "this"
+												},
+												offset: [
+													-0.01,
+													0.00,
+													-0.01,
+													0.01,
+													0.00,
+													0.01
+												]
+											}
+										},
+										second: 1
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}

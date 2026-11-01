@@ -1,7 +1,6 @@
-package syrena.foxo_origins.client.hud.widget;
+package syrena.foxo_origins.client.hud.widget.list;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
 import io.github.eggohito.kaya.power.PowerHolder;
 import net.minecraft.ChatFormatting;
@@ -18,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
+import syrena.foxo_origins.client.util.Misc;
 import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin_layer.OriginLayer;
 
@@ -31,18 +31,18 @@ import java.util.Optional;
 public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOriginsListEntry> {
     private final FormattedCharSequence INDENT = FormattedCharSequence.forward(" ".repeat(FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_LINE_INDENT), Style.EMPTY);
 
-    public Font font;
-    public Component title;
-    public Component shortDescription;
-    public Component description;
-    private int cachedWidth = 0;
-    private FormattedCharSequence truncatedTitle;
-    private FormattedCharSequence truncatedShortDescription;
-    private List<FormattedCharSequence> wrappedDescription = new ArrayList<>();
-    private List<Boolean> descriptionLinebreaks = new ArrayList<>();
-    private int descriptionLinebreakCount = 0;
-    public Either<ResourceLocation, ItemStack> icon;
-    public int impact;
+    protected Font font;
+    protected Component title;
+    protected Component shortDescription;
+    protected Component description;
+    protected int cachedWidth = 0;
+    protected FormattedCharSequence truncatedTitle;
+    protected FormattedCharSequence truncatedShortDescription;
+    protected List<FormattedCharSequence> wrappedDescription = new ArrayList<>();
+    protected List<Boolean> descriptionLinebreaks = new ArrayList<>();
+    protected int descriptionLinebreakCount = 0;
+    protected final Either<ResourceLocation, ItemStack> icon;
+    protected int impact;
     public int order;
     public boolean expanded = false;
     public boolean hovered = false;
@@ -66,19 +66,24 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
         return new FoxoOriginsOriginListEntry(origin, choosable, allowRandom,Minecraft.getInstance().font,origin.name(), origin.shortDescription(), origin.description(), origin.icon(),origin.impact(),origin.order());
     }
     public static FoxoOriginsListEntry newEntry(PowerHolder<?> power){
-        return new FoxoOriginsListEntry(Minecraft.getInstance().font,power.name(), power.description(), power.description(), null,0,0);
+        return new FoxoOriginsListEntry(Minecraft.getInstance().font,power.name(), power.description(), power.description(), null,-1,0);
     }
     public int getDescriptionHeight(){
-        return expanded ? wrappedDescription.size() * (font.lineHeight + FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_LINE_SPACING) + (descriptionLinebreakCount) * FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_PARAGRAPH_SPACING + FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_MARGINS.y:0;
+        return expanded ? wrappedDescription.size() * (font.lineHeight + FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_LINE_SPACING) + (descriptionLinebreakCount - 1) * FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_PARAGRAPH_SPACING + FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_MARGINS.y:0;
     }
-    public void render(GuiGraphics guiGraphics, boolean isLast, int rowTop, int rowLeft, int rowWidth, boolean hovered) {
+    protected void cacheProcessedComponents(int iconOffset){
+        truncatedTitle = truncateText(title,cachedWidth - iconOffset);
+        truncatedShortDescription = truncateText(shortDescription,cachedWidth - iconOffset);
+        wrappedDescription = wrapText(description,cachedWidth - FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_MARGINS.x * 2);
+    }
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean isLast, int rowTop, int rowLeft, int rowWidth, boolean hovered) {
         int itemHeight = FoxoOriginsDisplayScreen.ENTRY_HEIGHT;
+        int iconOffset = (icon == null ? 0 : itemHeight) + 4;
+
         this.hovered = hovered;
         if (this.cachedWidth != rowWidth){
             this.cachedWidth = rowWidth;
-            truncatedTitle = truncateText(title,rowWidth-itemHeight);
-            truncatedShortDescription = truncateText(shortDescription,rowWidth-itemHeight);
-            wrappedDescription = wrapText(description,cachedWidth - FoxoOriginsDisplayScreen.ENTRY_DESCRIPTION_MARGINS.x * 2);
+            cacheProcessedComponents(iconOffset);
         }
         //FoxoOrigins.LOGGER.info(String.format("%s, %s, %s, %s, %s, %s, %s, %s",id,rowTop,rowLeft,rowWidth,itemHeight,mouseX,mouseY,hovered));
         guiGraphics.blitSprite(RenderType::guiTextured, FoxoOriginsDisplayScreen.LIST_ENTRY_LOCATION,rowLeft,rowTop,rowWidth,itemHeight);
@@ -87,25 +92,24 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
         }
 
         if (icon != null) {
+            int iconSize = 24;
+            int offset = Math.round((itemHeight - iconSize) / 2f);
             icon.ifLeft(spriteLocation -> {
-                guiGraphics.blitSprite(RenderType::guiTextured, spriteLocation, rowLeft, rowTop, itemHeight, itemHeight);
+                guiGraphics.blitSprite(RenderType::guiTextured, spriteLocation, rowLeft + offset, rowTop + offset, iconSize, iconSize);
             });
             icon.ifRight(itemStack -> {
-                PoseStack pose = guiGraphics.pose();
-                pose.pushPose();
-                pose.scale(2, 2, 2);
-                pose.translate((float) (-rowLeft) / 2, (float) (-rowTop) / 2, (float) (-0) / 2);
-                guiGraphics.renderFakeItem(itemStack, rowLeft, rowTop, 1);
-                pose.popPose();
+                Misc.renderScaledFakeItem(guiGraphics,itemStack,rowLeft + offset,rowTop + offset,iconSize);
             });
         }
+        if (0<=impact && impact <= 5){
+            guiGraphics.blitSprite(RenderType::guiTextured,FoxoOriginsDisplayScreen.getImpactPath(impact),rowLeft + iconOffset,rowTop + 2,FoxoOriginsDisplayScreen.IMPACT_SIZE.x,FoxoOriginsDisplayScreen.IMPACT_SIZE.y);
+            guiGraphics.drawString(font,truncatedTitle,rowLeft + iconOffset,rowTop + FoxoOriginsDisplayScreen.IMPACT_SIZE.y + 4, Color.white.getRGB(),false);
+            guiGraphics.drawString(font,truncatedShortDescription,rowLeft + iconOffset,rowTop + font.lineHeight + FoxoOriginsDisplayScreen.IMPACT_SIZE.y + 5, Color.darkGray.getRGB(),false);
+        } else {
+            guiGraphics.drawString(font,truncatedTitle,rowLeft + iconOffset,rowTop + 4, Color.white.getRGB(),false);
+            guiGraphics.drawString(font,truncatedShortDescription,rowLeft + iconOffset,rowTop + font.lineHeight + 5, Color.darkGray.getRGB(),false);
+        }
 
-
-        guiGraphics.drawString(font,truncatedTitle,rowLeft+itemHeight,rowTop + FoxoOriginsDisplayScreen.IMPACT_SIZE.y, Color.white.getRGB(),false);
-        guiGraphics.drawString(font,truncatedShortDescription,rowLeft+itemHeight,rowTop + font.lineHeight + FoxoOriginsDisplayScreen.IMPACT_SIZE.y, Color.darkGray.getRGB(),false);
-
-
-        guiGraphics.blitSprite(RenderType::guiTextured,FoxoOriginsDisplayScreen.getImpactPath(impact),rowLeft+itemHeight,rowTop,FoxoOriginsDisplayScreen.IMPACT_SIZE.x,FoxoOriginsDisplayScreen.IMPACT_SIZE.y);
 
         if (!isLast){
             guiGraphics.blitSprite(RenderType::guiTextured, FoxoOriginsDisplayScreen.LIST_SEPARATOR_LOCATION,rowLeft,rowTop + itemHeight + getDescriptionHeight(),rowWidth,FoxoOriginsDisplayScreen.LIST_SEPARATOR_HEIGHT);
@@ -151,10 +155,10 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
     }
     public FormattedCharSequence truncateText(Component text, int width){
         FormattedText clippedText = font.substrByWidth(text, width - font.width(CommonComponents.ELLIPSIS));
-        return Language.getInstance().getVisualOrder(FormattedText.composite(clippedText, CommonComponents.ELLIPSIS));
+        return Language.getInstance().getVisualOrder(FormattedText.composite(clippedText, clippedText.getString().equals(text.getString())?Component.empty():CommonComponents.ELLIPSIS));
     }
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         expanded = hasDescription() && !expanded;
         return false;
     }

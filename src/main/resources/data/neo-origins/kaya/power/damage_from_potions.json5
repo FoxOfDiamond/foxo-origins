@@ -1,0 +1,41 @@
+{
+	type: "kaya:modify/item/use",
+	on_use_action: [
+		{
+			type: "kaya:damage_entity",
+			damage_type: "*:hurt_by_water",
+			amount: 2.0,
+			victim: "this"
+		},
+		{
+			type: "kaya:trigger_power_cooldown",
+			power: "*:water_vulnerability@cooldown",
+			entity: "this"
+		}
+	],
+	trigger_type: "during",
+	active_condition: {
+		type: "kaya:all_of",
+		conditions: [
+			{
+				type: "kaya:item_matches_ingredient",
+				ingredient: "minecraft:potion",
+				item: "used_item"
+			},
+			{
+				type: "kaya:compare",
+				comparison: {
+					type: "kaya:float",
+					comparator: "==",
+					first: {
+						type: "kaya:power/cooldown/progress",
+						power: "*:water_vulnerability@cooldown",
+						entity: "this"
+					},
+					second: 1.0
+				}
+			}
+		]
+	},
+	hidden: true
+}
