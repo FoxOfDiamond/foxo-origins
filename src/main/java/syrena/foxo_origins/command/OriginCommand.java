@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static net.minecraft.commands.Commands.*;
 
 public class OriginCommand {
-    public static final ResourceLocation DEFAULT_LAYER = ResourceLocation.fromNamespaceAndPath("neo-origins","origins");
+    public static final ResourceLocation DEFAULT_LAYER = ResourceLocation.fromNamespaceAndPath("foxo-origins","origins");
     public static void register(CommandNode<CommandSourceStack> rootNode, CommandBuildContext context) {
 
         CommandNode<CommandSourceStack> baseNode = literal("origin")
@@ -40,7 +40,6 @@ public class OriginCommand {
 
     static final class SetArgument {
         static CommandNode<CommandSourceStack> node(CommandBuildContext context) {
-
             var node = literal("set")
                     .then(argument("targets", EntityArgument.players())
                             .then(argument("origin", OriginArgument.origin())
@@ -49,7 +48,6 @@ public class OriginCommand {
                                             .executes(SetArgument::setWithLayer))));
 
             return node.build();
-
         }
         static int setWithDefaultLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
             OriginLayer layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);

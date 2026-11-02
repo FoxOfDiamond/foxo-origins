@@ -17,7 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
-import syrena.foxo_origins.client.util.Misc;
+import syrena.foxo_origins.client.util.MiscUtilClient;
 import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin_layer.OriginLayer;
 
@@ -59,11 +59,11 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
         this.impact = impact;
         this.icon = icon;
     }
-    public static FoxoOriginsListEntry newEntry(OriginLayer layer, boolean allowRandom){
-        return new FoxoOriginsOriginLayerListEntry(layer, allowRandom, Minecraft.getInstance().font,layer.name(),layer.shortDescription(),layer.description(), layer.icon(),layer.impact(),layer.order());
+    public static FoxoOriginsListEntry newEntry(OriginLayer layer, boolean requiresAction, boolean allowRandom){
+        return new FoxoOriginsOriginLayerSelectionListEntry(layer, requiresAction, allowRandom, Minecraft.getInstance().font,layer.name(),layer.shortDescription(),layer.description(), layer.icon().orElse(null),layer.impact(),layer.order());
     }
-    public static FoxoOriginsListEntry newEntry(Origin origin, boolean choosable, boolean allowRandom){
-        return new FoxoOriginsOriginListEntry(origin, choosable, allowRandom,Minecraft.getInstance().font,origin.name(), origin.shortDescription(), origin.description(), origin.icon(),origin.impact(),origin.order());
+    public static FoxoOriginsListEntry newEntry(Origin origin, OriginLayer layer, boolean choosable, boolean allowRandom){
+        return new FoxoOriginsOriginSelectionListEntry(origin, layer, choosable, allowRandom,Minecraft.getInstance().font,origin.name(), origin.shortDescription(), origin.description(), origin.icon().orElse(null),origin.impact(),origin.order());
     }
     public static FoxoOriginsListEntry newEntry(PowerHolder<?> power){
         return new FoxoOriginsListEntry(Minecraft.getInstance().font,power.name(), power.description(), power.description(), null,-1,0);
@@ -98,7 +98,7 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
                 guiGraphics.blitSprite(RenderType::guiTextured, spriteLocation, rowLeft + offset, rowTop + offset, iconSize, iconSize);
             });
             icon.ifRight(itemStack -> {
-                Misc.renderScaledFakeItem(guiGraphics,itemStack,rowLeft + offset,rowTop + offset,iconSize);
+                MiscUtilClient.renderScaledFakeItem(guiGraphics,itemStack,rowLeft + offset,rowTop + offset,iconSize);
             });
         }
         if (0<=impact && impact <= 5){

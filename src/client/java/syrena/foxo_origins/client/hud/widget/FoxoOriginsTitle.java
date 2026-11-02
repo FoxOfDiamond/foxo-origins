@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
-import syrena.foxo_origins.client.util.Misc;
+import syrena.foxo_origins.client.util.MiscUtilClient;
 
 import java.awt.*;
 
@@ -39,7 +39,7 @@ public class FoxoOriginsTitle extends AbstractWidget {
                 guiGraphics.blitSprite(RenderType::guiTextured, spriteLocation, getX() + offset + centeredOffset - height, getY() + offset, iconSize, iconSize);
             });
             icon.ifRight(itemStack -> {
-                Misc.renderScaledFakeItem(guiGraphics,itemStack,getX() + offset + centeredOffset - height,getY() + offset - 4,iconSize);
+                MiscUtilClient.renderScaledFakeItem(guiGraphics,itemStack,getX() + offset + centeredOffset - height,getY() + offset - 4,iconSize);
             });
         }
         int textOffset = (int) ((height - font.lineHeight * textScale) / 2);

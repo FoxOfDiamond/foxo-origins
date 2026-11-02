@@ -1,6 +1,7 @@
 package syrena.foxo_origins.client.hud.widget.list;
 
 import com.mojang.datafixers.util.Either;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,24 +11,32 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
 import syrena.foxo_origins.client.screen.PowersDisplayScreen;
+import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
 import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginManager;
+import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerManager;
 
-public class FoxoOriginsOriginListEntry extends FoxoOriginsListEntry{
+import java.util.Optional;
+
+public class FoxoOriginsOriginSelectionListEntry extends FoxoOriginsListEntry{
     SpriteIconButton viewButton;
     SpriteIconButton selectButton;
     int BUTTON_SIZE = FoxoOriginsDisplayScreen.ENTRY_ICON_BUTTON_SIZE;
     boolean choosable;
     boolean allowRandom;
-    public FoxoOriginsOriginListEntry(Origin origin, boolean choosable, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
+    public FoxoOriginsOriginSelectionListEntry(Origin origin, OriginLayer layer, boolean choosable, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
         super(font, title, shortDescription, description, icon, impact, order);
         this.choosable = choosable;
         this.allowRandom = allowRandom;
         this.viewButton = new SpriteIconButton.Builder(Component.empty(),(_ -> {
             Minecraft.getInstance().setScreen(new PowersDisplayScreen(this.title, icon, origin.powers().elements()));
         }),true).size(BUTTON_SIZE,BUTTON_SIZE).sprite(FoxoOriginsDisplayScreen.ENTRY_VIEW_BUTTON_LOCATION,BUTTON_SIZE,BUTTON_SIZE).build();
-        this.selectButton = new SpriteIconButton.Builder(Component.empty(),(onPress -> {
-            //send select packet
-        }),true).size(BUTTON_SIZE,BUTTON_SIZE).sprite(FoxoOriginsDisplayScreen.ENTRY_SELECT_BUTTON_LOCATION,BUTTON_SIZE,BUTTON_SIZE).build();
+        if (this.choosable){
+            this.selectButton = new SpriteIconButton.Builder(Component.empty(),(onPress -> {
+                ClientPlayNetworking.send(new ServerboundSelectOriginPacket(OriginLayerManager.getInstance().getKey(layer), Optional.of(OriginManager.getInstance().getKey(origin))));
+            }),true).size(BUTTON_SIZE,BUTTON_SIZE).sprite(FoxoOriginsDisplayScreen.ENTRY_SELECT_BUTTON_LOCATION,BUTTON_SIZE,BUTTON_SIZE).build();
+        }
     }
 
     @Override
@@ -45,8 +54,10 @@ public class FoxoOriginsOriginListEntry extends FoxoOriginsListEntry{
         int spacing = (rowHeight - BUTTON_SIZE) /2;
         this.viewButton.setPosition(rowLeft + rowWidth - rowHeight + spacing,rowTop + spacing);
         this.viewButton.render(guiGraphics,mouseX, mouseY,1);
-        this.selectButton.setPosition(rowLeft + rowWidth - rowHeight - BUTTON_SIZE,rowTop + spacing);
-        this.selectButton.render(guiGraphics,mouseX,mouseY,1);
+        if (this.choosable){
+            this.selectButton.setPosition(rowLeft + rowWidth - rowHeight - BUTTON_SIZE,rowTop + spacing);
+            this.selectButton.render(guiGraphics,mouseX,mouseY,1);
+        }
     }
 
     @Override

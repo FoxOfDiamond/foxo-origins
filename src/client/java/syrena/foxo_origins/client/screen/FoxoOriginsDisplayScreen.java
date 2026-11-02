@@ -3,10 +3,8 @@ package syrena.foxo_origins.client.screen;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +23,7 @@ public abstract class FoxoOriginsDisplayScreen extends Screen {
     public static final ResourceLocation SCROLLBAR_SCROLLER_PRESSED_LOCATION = FoxoOrigins.id("choose_origin/list/scrollbar/pressed");
     public static final ResourceLocation SCROLLBAR_LOCATION = FoxoOrigins.id("choose_origin/list/scrollbar/slot");
     public static final ResourceLocation IMPACT_PATH = FoxoOrigins.id("choose_origin/list/entry/impact");
+    public static final ResourceLocation ENTRY_REQUIRES_ACTION_ICON_LOCATION = ResourceLocation.withDefaultNamespace("icon/unseen_notification");
     public static final ResourceLocation ENTRY_VIEW_BUTTON_LOCATION = FoxoOrigins.id("choose_origin/list/entry/button/view_button");
     public static final ResourceLocation ENTRY_SELECT_BUTTON_LOCATION = FoxoOrigins.id("choose_origin/list/entry/button/select_button");
     public static final ResourceLocation ENTRY_RANDOMIZE_BUTTON_LOCATION = FoxoOrigins.id("choose_origin/list/entry/button/randomize_button");
@@ -35,6 +34,7 @@ public abstract class FoxoOriginsDisplayScreen extends Screen {
     public static final Vector2i WINDOW_PAPER_DOLL_SIZE = new Vector2i(96,168);
     public static final Vector2i WINDOW_PAPER_DOLL_OFFSET = new Vector2i(10,42);
     public static final Vector2i LIST_SIZE = new Vector2i(185,168);
+    public static final int ENTRY_REQUIRES_ACTION_ICON_SIZE = 8;
     public static final Vector2i WINDOW_LIST_OFFSET = new Vector2i(113,42);
     public static final Vector2i IMPACT_SIZE = new Vector2i(48,8);
     public static final int ENTRY_HEIGHT = 32;
@@ -70,18 +70,8 @@ public abstract class FoxoOriginsDisplayScreen extends Screen {
     protected void init(){
         this.layout.addChild(ImageWidget.sprite(WINDOW_SIZE.x,WINDOW_SIZE.y,WINDOW_FRAME_LOCATION),0,0);
         this.layout.addChild(new FoxoOriginsTitle(this.title, this.icon),WINDOW_TITLE_OFFSET.x,WINDOW_TITLE_OFFSET.y);
-        this.layout.addAnchoredChild(Button.builder(CommonComponents.GUI_DONE, _ -> {
-            FoxoOrigins.LOGGER.info("PRESSE");
-            this.onClose();
-        }).width(200).build(),WINDOW_SIZE.x/2,WINDOW_SIZE.y + 6,0.5f,0);
         this.layout.visitWidgets(this::addRenderableWidget);
         this.repositionElements();
-    }
-
-    @Override
-    public boolean mouseClicked(double d, double e, int i) {
-        FoxoOrigins.LOGGER.info("TAP");
-        return super.mouseClicked(d, e, i);
     }
 
     @Override
@@ -92,10 +82,6 @@ public abstract class FoxoOriginsDisplayScreen extends Screen {
     protected void repositionElements(){
         layout.setPosition(this.width/2 - layout.getWidth()/2 + WINDOW_OFFSET.x,this.height/2 - layout.getHeight()/2 + WINDOW_OFFSET.y);
         this.layout.arrangeElements();
-    }
-    @Override
-    public void onClose() {
-        Minecraft.getInstance().setScreen(this.lastScreen);
     }
     public static ResourceLocation getImpactPath(int i){
         return IMPACT_PATH.withSuffix("/"+i);

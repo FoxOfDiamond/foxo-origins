@@ -3,6 +3,7 @@ package syrena.foxo_origins.network.packet;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginLayersPacket;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginsPacket;
+import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
 
 public class FoxoOriginsPackets {
     public static void registerAll(){
@@ -10,5 +11,7 @@ public class FoxoOriginsPackets {
 
         PayloadTypeRegistry.playS2C().register(ClientboundUpdateOriginsPacket.TYPE,  ClientboundUpdateOriginsPacket.CODEC);
         PayloadTypeRegistry.playS2C().register(ClientboundUpdateOriginLayersPacket.TYPE,  ClientboundUpdateOriginLayersPacket.CODEC);
+
+        PayloadTypeRegistry.playC2S().register(ServerboundSelectOriginPacket.TYPE,  ServerboundSelectOriginPacket.CODEC);
     }
 }

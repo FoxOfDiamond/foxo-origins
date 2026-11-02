@@ -1,0 +1,8 @@
+{
+  visible: false,
+  choosable: false,
+  allow_random: false,
+  powers: [
+    "foxo-origins:placeholder_invulnerable"
+  ]
+}

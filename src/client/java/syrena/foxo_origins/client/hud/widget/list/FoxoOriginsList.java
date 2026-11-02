@@ -9,18 +9,21 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
 import org.joml.Vector2i;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
 public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry> implements ContainerEventHandler {
     protected List<FoxoOriginsListEntry> children;
     private double lastY = 0;
-
-    public FoxoOriginsList(Minecraft minecraft, Screen screen, int w, int h) {
+    private Component emptyMessage;
+    public FoxoOriginsList(Minecraft minecraft, Screen screen, Component emptyMessage, int w, int h) {
         super(minecraft, w, h,0, 0);
+        this.emptyMessage = emptyMessage;
         this.headerHeight = 0;
         ScreenMouseEvents.beforeMouseClick(screen).register((screen1, mouseX, mouseY, mouseButton) -> {
             this.updateScrolling(mouseX, mouseY, mouseButton);
@@ -97,6 +100,9 @@ public class FoxoOriginsList extends AbstractSelectionList<FoxoOriginsListEntry>
 
         this.enableScissor(guiGraphics);
         this.renderListItems(guiGraphics, mouseX, mouseY, a);
+        if (getItemCount() == 0){
+            guiGraphics.drawCenteredString(minecraft.font,emptyMessage,getX() + width/2,getY() + 10, Color.white.getRGB());
+        }
         guiGraphics.disableScissor();
 
         this.renderScrollbar(guiGraphics);

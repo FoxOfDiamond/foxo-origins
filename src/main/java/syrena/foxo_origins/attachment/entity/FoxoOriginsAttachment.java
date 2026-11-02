@@ -2,6 +2,7 @@ package syrena.foxo_origins.attachment.entity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import io.github.eggohito.kaya.power.entity.MutablePowers;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -69,6 +70,7 @@ public class FoxoOriginsAttachment {
                             Codec.unboundedMap(ResourceLocation.CODEC,ResourceLocation.CODEC).encode(encodedMap,ops,prefix));
         }
     };*/
+    public static final ResourceLocation DEFAULT_PLACEHOLDER = ResourceLocation.fromNamespaceAndPath("foxo-origins","placeholder_invulnerable");
     public static final Codec<Map<OriginLayer,Origin>> CODEC = Codec.unboundedMap(ResourceLocation.CODEC.flatXmap(OriginLayerManager.getInstance()::getAsResult,OriginLayerManager.getInstance()::getKeyAsResult),ResourceLocation.CODEC.flatXmap(OriginManager.getInstance()::getAsResult,OriginManager.getInstance()::getKeyAsResult));
     public static final StreamCodec<RegistryFriendlyByteBuf, Map<OriginLayer, Origin>> STREAM_CODEC =
             ByteBufCodecs.map(
@@ -79,17 +81,33 @@ public class FoxoOriginsAttachment {
             );
     public static void refreshOrigins(Entity entity, Map<OriginLayer,Origin> origins){
         for (OriginLayer layer: OriginLayerManager.getInstance().values()){
-            if (layer.defaultOrigin().isPresent() && !origins.containsKey(layer)){
-                HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(origins);
+            if (!origins.containsKey(layer)){
+                if (layer.defaultOrigin().isPresent()){
+                    HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(origins);
 
-                mutableAttachment.put(layer,layer.defaultOrigin().get());
-                entity.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
-                refreshOrigins(entity, entity.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT));
-                return;
+                    mutableAttachment.put(layer,layer.defaultOrigin().get());
+                    entity.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
+                    refreshOrigins(entity, entity.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT));
+                    return;
+                } else {
+                    DataResult<Origin> placeholderOrigin = OriginManager.getInstance().getAsResult(DEFAULT_PLACEHOLDER);
+                    if (!placeholderOrigin.isSuccess()) return;
+                    Origin placeholder = layer.placeholderOrigin().orElse(placeholderOrigin.getOrThrow());
+                    HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(origins);
+
+                    mutableAttachment.put(layer,placeholder);
+                    entity.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
+                    refreshOrigins(entity, entity.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT));
+                    return;
+                    //Handle force player choice packets
+                }
             }
         }
         MutablePowers mutable = MutablePowers.create(entity);
         origins.forEach((layer,origin) -> {
+            FoxoOrigins.LOGGER.info(layer.toString());
+            FoxoOrigins.LOGGER.info(OriginLayerManager.getInstance().getKey(layer).toString());
+
             origin.powers().elements().forEach(power -> {
                 mutable.grant(power.id(),powerSource(layer));
             });
@@ -111,7 +129,7 @@ public class FoxoOriginsAttachment {
         ServerEntityEvents.ENTITY_LOAD.register(FoxoOrigins.id("origins_attachment"), FoxoOriginsAttachment::onLoad);
     }
     private static void onLoad(Entity entity, ServerLevel level){
-        Map<OriginLayer,Origin> data = entity.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.of());
-        refreshOrigins(entity, data);
+        //Map<OriginLayer,Origin> data = entity.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.of());
+        //refreshOrigins(entity, data);
     }
 }

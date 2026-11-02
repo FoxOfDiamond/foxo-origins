@@ -23,8 +23,10 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import syrena.foxo_origins.util.MiscUtil;
 
+import java.util.Optional;
 
-public record Origin(Component name, Component description, Component shortDescription, Either<ResourceLocation,ItemStack> icon, int order, int impact, TagLike<PowerHolder<?>> powers, BooleanProvider visible, BooleanProvider choosable, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
+
+public record Origin(Component name, Component description, Component shortDescription, Optional<Either<ResourceLocation,ItemStack>> icon, int order, int impact, TagLike<PowerHolder<?>> powers, BooleanProvider visible, BooleanProvider choosable, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
             .required(KayaContextParameters.THIS_ENTITY)
             .build();
@@ -33,7 +35,7 @@ public record Origin(Component name, Component description, Component shortDescr
                             ComponentSerialization.CODEC.optionalFieldOf("name", Component.empty()).forGetter(Origin::name),
                             ComponentSerialization.CODEC.optionalFieldOf("description", Component.empty()).forGetter(Origin::description),
                             ComponentSerialization.CODEC.optionalFieldOf("short_description", Component.empty()).forGetter(Origin::shortDescription),
-                            Codec.either(ResourceLocation.CODEC,ItemStack.CODEC).optionalFieldOf("icon",null).forGetter(Origin::icon),
+                            Codec.either(ResourceLocation.CODEC,ItemStack.CODEC).optionalFieldOf("icon").forGetter(Origin::icon),
                             Codec.INT.optionalFieldOf("order",0).forGetter(Origin::order),
                             Codec.INT.optionalFieldOf("impact", 0).forGetter(Origin::impact),
                             TagLike.codec(PowerManager.TAG_LOOKUP).optionalFieldOf("powers",TagLike.empty()).forGetter(Origin::powers),
@@ -50,7 +52,7 @@ public record Origin(Component name, Component description, Component shortDescr
             ComponentSerialization.STREAM_CODEC, Origin::name,
             ComponentSerialization.STREAM_CODEC, Origin::description,
             ComponentSerialization.STREAM_CODEC, Origin::shortDescription,
-            ByteBufCodecs.either(ResourceLocation.STREAM_CODEC,ItemStack.STREAM_CODEC),Origin::icon,
+            ByteBufCodecs.optional(ByteBufCodecs.either(ResourceLocation.STREAM_CODEC,ItemStack.STREAM_CODEC)),Origin::icon,
             ByteBufCodecs.INT,Origin::order,
             ByteBufCodecs.INT,Origin::impact,
             TagLike.streamCodec(PowerManager.TAG_LOOKUP),Origin::powers,

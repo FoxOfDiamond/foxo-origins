@@ -10,6 +10,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import io.github.eggohito.kaya.context.Context;
 import io.github.eggohito.kaya.context.ContextValidator;
 import io.github.eggohito.kaya.event.ReloadableServerResourcesEvents;
 import io.github.eggohito.kaya.resource.json.JsonFileToIdConverter;
@@ -29,6 +30,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -43,12 +45,12 @@ import syrena.foxo_origins.event.DependencyManager;
 import syrena.foxo_origins.event.OriginLayerPreparation;
 import syrena.foxo_origins.event.OriginLayerReloadEvents;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginLayersPacket;
+import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
+import syrena.foxo_origins.origin.Origin;
 import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
@@ -132,7 +134,6 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.addPhaseOrdering(OriginManager.ID, ID);
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(ID, (player, joined) -> {
-
             if (!joined) {
                 this.send(player);
             }
@@ -154,6 +155,37 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((_,_)->{
             clearData();
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundSelectOriginPacket.TYPE, this::receive);
+    }
+
+    private void receive(ServerboundSelectOriginPacket payload, ServerPlayNetworking.Context context) {
+        ServerPlayer player = context.player();
+        ServerLevel level = player.serverLevel();
+
+        Origin origin;
+        OriginLayer layer = OriginLayerManager.getInstance().get(payload.layer());
+
+        if (payload.origin().isEmpty()){
+            Context thisContext = syrena.foxo_origins.util.MiscUtil.thisContext(player,level);
+            if (!layer.allowsRandom(thisContext)) return;
+            List<Origin> eligibleOrigins = new ArrayList<>();
+            layer.origins().elements().forEach(entry -> {
+                if (entry.allowsRandom(thisContext)) eligibleOrigins.add(entry);
+            });
+            if (eligibleOrigins.isEmpty()) return;
+            origin = eligibleOrigins.get(level.random.nextInt(eligibleOrigins.size()));
+        } else {
+            origin = OriginManager.getInstance().get(payload.origin().get());
+        }
+        Map<OriginLayer,Origin> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,ImmutableMap.of());
+        HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(attachment);
+        FoxoOrigins.LOGGER.info(payload.layer().toString());
+        FoxoOrigins.LOGGER.info(layer.toString());
+        if (attachment.get(layer) != null && attachment.get(layer).equals(origin)) return;
+
+        mutableAttachment.put(layer,origin);
+        player.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
     }
 
     public DataResult<ResourceLocation> getKeyAsResult(OriginLayer originLayer) {
