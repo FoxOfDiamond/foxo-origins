@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
-import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginHolder;
 import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
@@ -72,11 +72,11 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
         return context.getArgument(name, OriginArgument.Result.class);
     }
 
-    public static List<Origin> getOrigins(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<OriginHolder> getOrigins(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return context.getArgument(name, OriginArgument.Result.class).get();
     }
 
-    public static Origin getOrigin(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static OriginHolder getOrigin(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginArgument.Result.Singleton singleton ->
                     singleton.get().getFirst();
@@ -85,7 +85,7 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
         };
     }
 
-    public static List<Origin> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<OriginHolder> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginArgument.Result.Singleton singleton ->
                     throw MiscUtil.createCommandException(() -> "Expected a tag, but got origin " + singleton.id() + "!");
@@ -105,12 +105,12 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
 
     public sealed interface Result extends ContextValidatable permits OriginArgument.Result.Singleton, OriginArgument.Result.Collection {
 
-        List<Origin> get() throws CommandSyntaxException;
+        List<OriginHolder> get() throws CommandSyntaxException;
 
         record Singleton(ResourceLocation id) implements OriginArgument.Result {
 
             @Override
-            public List<Origin> get() throws CommandSyntaxException {
+            public List<OriginHolder> get() throws CommandSyntaxException {
                 return List.of(OriginManager.getInstance().getAsResult(id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error)));
             }
 
@@ -121,10 +121,10 @@ public record OriginArgument(boolean allowTags) implements ArgumentType<OriginAr
 
         }
 
-        record Collection(TagKey<Origin> tag) implements OriginArgument.Result {
+        record Collection(TagKey<OriginHolder> tag) implements OriginArgument.Result {
 
             @Override
-            public List<Origin> get() throws CommandSyntaxException {
+            public List<OriginHolder> get() throws CommandSyntaxException {
                 return OriginManager.getInstance().getTagAsResult(this.id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error));
             }
 

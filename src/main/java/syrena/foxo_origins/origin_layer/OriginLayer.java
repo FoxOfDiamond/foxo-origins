@@ -18,14 +18,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginHolder;
 import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.util.MiscUtil;
 
 import java.util.Optional;
 
 
-public record OriginLayer(Component name, Component description, Component shortDescription, Optional<Either<ResourceLocation,ItemStack>> icon, int order, int impact, TagLike<Origin> origins, Optional<Origin> defaultOrigin, Optional<Origin> placeholderOrigin, BooleanProvider visible, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
+public record OriginLayer(Component name, Component description, Component shortDescription, Optional<Either<ResourceLocation,ItemStack>> icon, int order, int impact, TagLike<OriginHolder> origins, Optional<OriginHolder> defaultOrigin, Optional<OriginHolder> placeholderOrigin, BooleanProvider visible, BooleanProvider allowRandom, int loadingPriority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
             .required(KayaContextParameters.THIS_ENTITY)
             .build();
@@ -38,11 +38,11 @@ public record OriginLayer(Component name, Component description, Component short
                             Codec.INT.optionalFieldOf("order",0).forGetter(OriginLayer::order),
                             Codec.INT.optionalFieldOf("impact", 0).forGetter(OriginLayer::impact),
                             TagLike.codec(OriginManager.TAG_LOOKUP).optionalFieldOf("origins",TagLike.empty()).forGetter(OriginLayer::origins),
-                            Origin.CODEC.optionalFieldOf("default_origin").forGetter(OriginLayer::defaultOrigin),
-                            Origin.CODEC.optionalFieldOf("placeholder_origin").forGetter(OriginLayer::placeholderOrigin),
+                            OriginHolder.CODEC.optionalFieldOf("default_origin").forGetter(OriginLayer::defaultOrigin),
+                            OriginHolder.CODEC.optionalFieldOf("placeholder_origin").forGetter(OriginLayer::placeholderOrigin),
                             BooleanProvider.CODEC.optionalFieldOf("visible", new ConstantBooleanProvider(true)).forGetter(OriginLayer::visible),
                             BooleanProvider.CODEC.optionalFieldOf("allow_random",new ConstantBooleanProvider(true)).forGetter(OriginLayer::allowRandom),
-                            Codec.INT.optionalFieldOf("loading_priority", 0).forGetter(OriginLayer::loading_priority))
+                            Codec.INT.optionalFieldOf("loadingPriority", 0).forGetter(OriginLayer::loadingPriority))
                     .apply(instance, OriginLayer::new)
 
     );
@@ -57,11 +57,11 @@ public record OriginLayer(Component name, Component description, Component short
             ByteBufCodecs.INT, OriginLayer::order,
             ByteBufCodecs.INT, OriginLayer::impact,
             TagLike.streamCodec(OriginManager.TAG_LOOKUP),OriginLayer::origins,
-            ByteBufCodecs.optional(Origin.STREAM_CODEC),OriginLayer::defaultOrigin,
-            ByteBufCodecs.optional(Origin.STREAM_CODEC),OriginLayer::placeholderOrigin,
+            ByteBufCodecs.optional(OriginHolder.STREAM_CODEC),OriginLayer::defaultOrigin,
+            ByteBufCodecs.optional(OriginHolder.STREAM_CODEC),OriginLayer::placeholderOrigin,
             BooleanProvider.STREAM_CODEC, OriginLayer::visible,
             BooleanProvider.STREAM_CODEC, OriginLayer::allowRandom,
-            ByteBufCodecs.INT, OriginLayer::loading_priority,
+            ByteBufCodecs.INT, OriginLayer::loadingPriority,
             OriginLayer::new
     );
 
@@ -75,5 +75,22 @@ public record OriginLayer(Component name, Component description, Component short
     public void validate(ContextValidator validator) {
         this.allowRandom.validate(validator.forChild(".allow_random_condition"));
         this.visible.validate(validator.forChild(".visible_condition"));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof OriginLayer layer)) return false;
+        return layer.description.equals(this.description) &&
+                layer.name.equals(this.name)&&
+                layer.icon.equals(this.icon)&&
+                layer.order == (this.order)&&
+                layer.impact == (this.impact)&&
+                layer.origins.equals(this.origins)&&
+                layer.defaultOrigin.equals(this.defaultOrigin)&&
+                layer.placeholderOrigin.equals(this.placeholderOrigin)&&
+                layer.allowRandom.equals(this.allowRandom)&&
+                layer.visible.equals(this.visible)&&
+                layer.loadingPriority == (this.loadingPriority)&&
+                layer.shortDescription.equals(this.shortDescription);
     }
 }

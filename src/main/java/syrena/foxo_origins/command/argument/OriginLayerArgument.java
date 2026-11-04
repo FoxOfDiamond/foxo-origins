@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
@@ -72,23 +72,23 @@ public record OriginLayerArgument(boolean allowTags) implements ArgumentType<Ori
         return context.getArgument(name, OriginLayerArgument.Result.class);
     }
 
-    public static List<OriginLayer> getOriginLayers(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<OriginLayerHolder> getOriginLayers(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return context.getArgument(name, OriginLayerArgument.Result.class).get();
     }
 
-    public static OriginLayer getOriginLayer(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static OriginLayerHolder getOriginLayer(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginLayerArgument.Result.Singleton singleton ->
                     singleton.get().getFirst();
             case OriginLayerArgument.Result.Collection collection ->
-                    throw MiscUtil.createCommandException(() -> "Expected an origin layer, but got tag \"#" + collection.id() + "\"");
+                    throw MiscUtil.createCommandException(() -> "Expected an origin origin, but got tag \"#" + collection.id() + "\"");
         };
     }
 
-    public static List<OriginLayer> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+    public static List<OriginLayerHolder> getTag(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
         return switch (getResult(context, name)) {
             case OriginLayerArgument.Result.Singleton singleton ->
-                    throw MiscUtil.createCommandException(() -> "Expected a tag, but got origin layer " + singleton.id() + "!");
+                    throw MiscUtil.createCommandException(() -> "Expected a tag, but got origin origin " + singleton.id() + "!");
             case OriginLayerArgument.Result.Collection collection ->
                     collection.get();
         };
@@ -105,12 +105,12 @@ public record OriginLayerArgument(boolean allowTags) implements ArgumentType<Ori
 
     public sealed interface Result extends ContextValidatable permits OriginLayerArgument.Result.Singleton, OriginLayerArgument.Result.Collection {
 
-        List<OriginLayer> get() throws CommandSyntaxException;
+        List<OriginLayerHolder> get() throws CommandSyntaxException;
 
         record Singleton(ResourceLocation id) implements OriginLayerArgument.Result {
 
             @Override
-            public List<OriginLayer> get() throws CommandSyntaxException {
+            public List<OriginLayerHolder> get() throws CommandSyntaxException {
                 return List.of(OriginLayerManager.getInstance().getAsResult(id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error)));
             }
 
@@ -121,10 +121,10 @@ public record OriginLayerArgument(boolean allowTags) implements ArgumentType<Ori
 
         }
 
-        record Collection(TagKey<OriginLayer> tag) implements OriginLayerArgument.Result {
+        record Collection(TagKey<OriginLayerHolder> tag) implements OriginLayerArgument.Result {
 
             @Override
-            public List<OriginLayer> get() throws CommandSyntaxException {
+            public List<OriginLayerHolder> get() throws CommandSyntaxException {
                 return OriginLayerManager.getInstance().getTagAsResult(this.id()).getOrThrow(error -> MiscUtil.createCommandException(() -> error));
             }
 

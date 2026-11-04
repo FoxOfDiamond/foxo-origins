@@ -18,8 +18,8 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
 import syrena.foxo_origins.client.util.MiscUtilClient;
-import syrena.foxo_origins.origin.Origin;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin.OriginHolder;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -59,11 +59,11 @@ public class FoxoOriginsListEntry extends AbstractSelectionList.Entry<FoxoOrigin
         this.impact = impact;
         this.icon = icon;
     }
-    public static FoxoOriginsListEntry newEntry(OriginLayer layer, boolean requiresAction, boolean allowRandom){
-        return new FoxoOriginsOriginLayerSelectionListEntry(layer, requiresAction, allowRandom, Minecraft.getInstance().font,layer.name(),layer.shortDescription(),layer.description(), layer.icon().orElse(null),layer.impact(),layer.order());
+    public static FoxoOriginsListEntry newEntry(OriginLayerHolder layer, boolean requiresAction, boolean allowRandom){
+        return new FoxoOriginsOriginLayerSelectionListEntry(layer, requiresAction, allowRandom, Minecraft.getInstance().font,layer.layer().name(),layer.layer().shortDescription(),layer.layer().description(), layer.layer().icon().orElse(null),layer.layer().impact(),layer.layer().order());
     }
-    public static FoxoOriginsListEntry newEntry(Origin origin, OriginLayer layer, boolean choosable, boolean allowRandom){
-        return new FoxoOriginsOriginSelectionListEntry(origin, layer, choosable, allowRandom,Minecraft.getInstance().font,origin.name(), origin.shortDescription(), origin.description(), origin.icon().orElse(null),origin.impact(),origin.order());
+    public static FoxoOriginsListEntry newEntry(OriginHolder origin, OriginLayerHolder layer, boolean choosable, boolean allowRandom){
+        return new FoxoOriginsOriginSelectionListEntry(origin, layer, choosable, allowRandom,Minecraft.getInstance().font,origin.origin().name(), origin.origin().shortDescription(), origin.origin().description(), origin.origin().icon().orElse(null),origin.origin().impact(),origin.origin().order());
     }
     public static FoxoOriginsListEntry newEntry(PowerHolder<?> power){
         return new FoxoOriginsListEntry(Minecraft.getInstance().font,power.name(), power.description(), power.description(), null,-1,0);

@@ -23,14 +23,14 @@ public class EntityMixin {
         Entity thisAsEntity = (Entity) (Object) this;
         thisAsEntity.onAttachedSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT).register((oldAttachment, newAttachment)->{
             FoxoOriginsClient.LOGGER.info("Something changed");
-            if (!MiscUtilClient.checkIfSelectionFinished(newAttachment)){
-                Minecraft.getInstance().execute(new Runnable() {
-                    @Override
-                    public void run() {
+            Minecraft.getInstance().execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (!MiscUtilClient.checkIfSelectionFinished(newAttachment)||Minecraft.getInstance().screen instanceof OriginLayersSelectScreen){
                         Minecraft.getInstance().setScreen(new OriginLayersSelectScreen(Component.translatable("gui.foxo-origins.view_layer.title"), new ObjectArrayList<>(OriginLayerManager.getInstance().values().iterator())));
                     }
-                });
-            }
+                }
+            });
         });
     }
 }

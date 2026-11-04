@@ -13,11 +13,11 @@ import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsList;
 import syrena.foxo_origins.client.hud.widget.list.FoxoOriginsListEntry;
 import syrena.foxo_origins.client.util.MiscUtilClient;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 
 public class OriginsSelectScreen extends FoxoOriginsDisplayScreen{
-    OriginLayer layer;
-    public OriginsSelectScreen(Component component, Either<ResourceLocation, ItemStack> icon, OriginLayer layer) {
+    OriginLayerHolder layer;
+    public OriginsSelectScreen(Component component, Either<ResourceLocation, ItemStack> icon, OriginLayerHolder layer) {
         this.layer = layer;
         super(component, icon);
     }
@@ -30,21 +30,21 @@ public class OriginsSelectScreen extends FoxoOriginsDisplayScreen{
         }).width(100).build(),WINDOW_SIZE.x/2-55,WINDOW_SIZE.y + 6,0.5f,0);
 
         MutableComponent randomizeTooltip = Component.translatable("gui.foxo-origins.choose_origin.randomize_layer.tooltip");
-        layer.origins().elements().forEach(origin -> {
-            if (origin.allowsRandom(MiscUtilClient.thisContext(Minecraft.getInstance()))){
+        layer.layer().origins().elements().forEach(origin -> {
+            if (origin.origin().allowsRandom(MiscUtilClient.thisContext(Minecraft.getInstance()))){
                 randomizeTooltip.append(CommonComponents.NEW_LINE);
-                randomizeTooltip.append(origin.name());
+                randomizeTooltip.append(origin.origin().name());
             }
         });
         this.layout.addAnchoredChild(Button.builder(Component.translatable("gui.foxo-origins.choose_origin.randomize_layer"), _ -> {
             this.onClose();
         }).width(100).tooltip(Tooltip.create(randomizeTooltip)).build(),WINDOW_SIZE.x/2+55,WINDOW_SIZE.y + 6,0.5f,0);
-        layer.origins().elements().forEach(origin -> {
+        layer.layer().origins().elements().forEach(origin -> {
             assert minecraft != null;
             assert minecraft.player != null;
             Context thisContext = MiscUtilClient.thisContext(minecraft);
-            if (!origin.isVisible(thisContext)) return;
-            list.addEntryOrdered(FoxoOriginsListEntry.newEntry(origin, layer,origin.isChoosable(thisContext),origin.allowsRandom(thisContext)));
+            if (!origin.origin().isVisible(thisContext)) return;
+            list.addEntryOrdered(FoxoOriginsListEntry.newEntry(origin, layer,origin.origin().isChoosable(thisContext),origin.origin().allowsRandom(thisContext)));
         });
 
         super.init();

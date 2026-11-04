@@ -13,8 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import syrena.foxo_origins.command.argument.OriginArgument;
 import syrena.foxo_origins.command.argument.OriginLayerArgument;
-import syrena.foxo_origins.origin.Origin;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin.OriginHolder;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
@@ -44,29 +44,29 @@ public class OriginCommand {
                     .then(argument("targets", EntityArgument.players())
                             .then(argument("origin", OriginArgument.origin())
                                     .executes(SetArgument::setWithDefaultLayer)
-                                    .then(argument("layer", OriginLayerArgument.originLayer())
+                                    .then(argument("origin", OriginLayerArgument.originLayer())
                                             .executes(SetArgument::setWithLayer))));
 
             return node.build();
         }
         static int setWithDefaultLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-            OriginLayer layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
+            OriginLayerHolder layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
             return setWithLayer(context,layer);
         }
         static int setWithLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 
-            OriginLayer layer = OriginLayerArgument.getOriginLayer(context,"layer");
+            OriginLayerHolder layer = OriginLayerArgument.getOriginLayer(context,"origin");
             return setWithLayer(context,layer);
         }
-        static int setWithLayer(CommandContext<CommandSourceStack> context, OriginLayer layer) throws CommandSyntaxException {
+        static int setWithLayer(CommandContext<CommandSourceStack> context, OriginLayerHolder layer) throws CommandSyntaxException {
             CommandSourceStack source = context.getSource();
 
-            Origin origin = OriginArgument.getOrigin(context,"origin");
+            OriginHolder origin = OriginArgument.getOrigin(context,"origin");
             List<ServerPlayer> targets = new ObjectArrayList<>(EntityArgument.getPlayers(context,"targets"));
             List<ServerPlayer> processedTargets = new ArrayList<>();
             for(ServerPlayer player: targets){
-                Map<OriginLayer,Origin> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,ImmutableMap.of());
-                HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(attachment);
+                Map<OriginLayerHolder,OriginHolder> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,ImmutableMap.of());
+                HashMap<OriginLayerHolder,OriginHolder> mutableAttachment = new HashMap<>(attachment);
 
                 if (attachment.get(layer) != null && attachment.get(layer).equals(origin)) continue;
 
@@ -79,14 +79,14 @@ public class OriginCommand {
                 if (targets.isEmpty()) {
                     source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.failure.no_targets","set"));
                 } else if (targets.size() == 1) {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.name(),layer.name()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.single",targets.getFirst().getName(),origin.origin().name(),layer.layer().name()));
                 } else {
-                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.name(),layer.name()));
+                    source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.set.failure.multiple",targets.size(),origin.origin().name(),layer.layer().name()));
                 }
             } else if (processedTargets.size() == 1){
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.name(),origin.name()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.single",processedTargets.getFirst().getName(),layer.layer().name(),origin.origin().name()),true);
             } else {
-                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.name(),origin.name()),true);
+                source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.set.success.multiple",processedTargets.size(),layer.layer().name(),origin.origin().name()),true);
             }
             return processedTargets.size();
         }
@@ -97,26 +97,26 @@ public class OriginCommand {
             var node = literal("get")
                     .then(argument("target", EntityArgument.player())
                             .executes(GetArgument::getWithDefaultLayer)
-                            .then(argument("layer", OriginLayerArgument.originLayer())
+                            .then(argument("origin", OriginLayerArgument.originLayer())
                                     .executes(GetArgument::getWithLayer)));
 
             return node.build();
         }
         static int getWithDefaultLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-            OriginLayer layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
+            OriginLayerHolder layer = OriginLayerManager.getInstance().get(DEFAULT_LAYER);
             return getWithLayer(context,layer);
         }
         static int getWithLayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 
-            OriginLayer layer = OriginLayerArgument.getOriginLayer(context,"layer");
+            OriginLayerHolder layer = OriginLayerArgument.getOriginLayer(context,"origin");
             return getWithLayer(context,layer);
         }
-        static int getWithLayer(CommandContext<CommandSourceStack> context, OriginLayer layer) throws CommandSyntaxException {
+        static int getWithLayer(CommandContext<CommandSourceStack> context, OriginLayerHolder layer) throws CommandSyntaxException {
             CommandSourceStack source = context.getSource();
 
             ServerPlayer player = EntityArgument.getPlayer(context,"target");
 
-            Map<OriginLayer,Origin> attachment = player.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT);
+            Map<OriginLayerHolder,OriginHolder> attachment = player.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT);
 
             if (attachment == null) {
                 source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.get.failure.no_attachment",player.getName(),layer));
@@ -126,11 +126,11 @@ public class OriginCommand {
             attachment.forEach((thatLayer,origin)->{
                 if (layer==thatLayer) {
                     success.set(true);
-                    source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.get.info",player.getName(),origin.name(),layer.name()),true);
+                    source.sendSuccess(() -> Component.translatableEscape("commands.foxo-origins.origin.get.info",player.getName(),origin.origin().name(),layer.layer().name()),true);
                 }
             });
             if (success.get()) return 1;
-            source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.get.failure.not_set",player.getName(),layer.name()));
+            source.sendFailure(Component.translatableEscape("commands.foxo-origins.origin.get.failure.not_set",player.getName(),layer.layer().name()));
             return 0;
         }
     }

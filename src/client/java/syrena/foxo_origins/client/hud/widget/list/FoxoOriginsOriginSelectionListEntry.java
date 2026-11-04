@@ -12,9 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
 import syrena.foxo_origins.client.screen.PowersDisplayScreen;
 import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
-import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginHolder;
 import syrena.foxo_origins.origin.OriginManager;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 
 import java.util.Optional;
@@ -25,12 +25,12 @@ public class FoxoOriginsOriginSelectionListEntry extends FoxoOriginsListEntry{
     int BUTTON_SIZE = FoxoOriginsDisplayScreen.ENTRY_ICON_BUTTON_SIZE;
     boolean choosable;
     boolean allowRandom;
-    public FoxoOriginsOriginSelectionListEntry(Origin origin, OriginLayer layer, boolean choosable, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
+    public FoxoOriginsOriginSelectionListEntry(OriginHolder origin, OriginLayerHolder layer, boolean choosable, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
         super(font, title, shortDescription, description, icon, impact, order);
         this.choosable = choosable;
         this.allowRandom = allowRandom;
         this.viewButton = new SpriteIconButton.Builder(Component.empty(),(_ -> {
-            Minecraft.getInstance().setScreen(new PowersDisplayScreen(this.title, icon, origin.powers().elements()));
+            Minecraft.getInstance().setScreen(new PowersDisplayScreen(this.title, icon, origin.origin().powers().elements()));
         }),true).size(BUTTON_SIZE,BUTTON_SIZE).sprite(FoxoOriginsDisplayScreen.ENTRY_VIEW_BUTTON_LOCATION,BUTTON_SIZE,BUTTON_SIZE).build();
         if (this.choosable){
             this.selectButton = new SpriteIconButton.Builder(Component.empty(),(onPress -> {

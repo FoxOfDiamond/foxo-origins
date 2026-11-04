@@ -50,13 +50,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLocation, Origin> implements OriginManager, IdentifiableResourceReloadListener {
+public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLocation, OriginHolder> implements OriginManager, IdentifiableResourceReloadListener {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Supplier<ImmutableSet<ResourceLocation>> DEPENDENCIES = Suppliers.memoize(() -> Util.make(ImmutableSet.builder(), DependencyManager.ORIGINS.invoker()::add).build());
 
     private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN).directory(),EnumSet.allOf(JsonFormat.class));
-    private final TagLoader<Origin> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN));
+    private final TagLoader<OriginHolder> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN));
 
     private volatile Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags = Map.of();
     private volatile DynamicOps<JsonElement> ops = JsonOps.INSTANCE;
@@ -87,7 +87,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
         OriginReloadEvents.BEFORE.invoker().beforeReload(manager, profiler);
         LOGGER.info("Parsing origins from data packs...");
 
-        ImmutableMap.Builder<ResourceLocation, Origin> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, OriginHolder> builder = ImmutableMap.builder();
         this.contents = ImmutableMap.of();
 
         pendingOrigins.forEach((id, jsonWithSource) -> {
@@ -96,11 +96,11 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
 
             ResourceLocationUtil.setCurrent(id);
             MiscUtil.handleResult(
-                    Origin.CODEC.parse(ops, jsonWithSource.json()),
-                    origin -> builder.put(id,origin),
+                    OriginHolder.CODEC.parse(ops, jsonWithSource.json()),
+                    originHolder -> builder.put(id,originHolder),
                     (thingy) -> true,
-                    warning -> LOGGER.warn("Found warning(s) while parsing origin {} from data pack [{}]: {}", id.toString(), jsonWithSource.source(), warning),
-                    error -> LOGGER.error("Error trying to parse origin {} from data pack [{}] (skipping): {}", id.toString(), jsonWithSource.source(), error)
+                    warning -> LOGGER.warn("Found warning(s) while parsing originHolder {} from data pack [{}]: {}", id.toString(), jsonWithSource.source(), warning),
+                    error -> LOGGER.error("Error trying to parse originHolder {} from data pack [{}] (skipping): {}", id.toString(), jsonWithSource.source(), error)
             );
 
             ResourceLocationUtil.setCurrent(null);
@@ -110,7 +110,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
         this.pendingTags = pendingTags;
 
         OriginReloadEvents.AFTER.invoker().afterReload(manager, profiler);
-        LOGGER.info("Finished parsing origins from data packs. Parsed {} origin(s)", contents.size());
+        LOGGER.info("Finished parsing origins from data packs. Parsed {} originHolder(s)", contents.size());
 
     }
     private ServerOriginManager withOps(@NotNull HolderLookup.Provider provider) {
@@ -151,7 +151,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
 
     private void finalize(ReloadableServerResources resources) {
 
-        ImmutableMap.Builder<ResourceLocation, Origin> validatedContents = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, OriginHolder> validatedContents = ImmutableMap.builder();
         int prevSize = contents.size();
 
         LOGGER.info("Validating {} origin(s)...", prevSize);
@@ -162,7 +162,7 @@ public class ServerOriginManager extends AbstractContentAndTagManager<ResourceLo
 
                 ContextValidator validator = new ContextValidator(Origin.PARAMETERS, reporter, MiscUtil.getRegistries(resources));
 
-                origin.validate(validator);
+                origin.origin().validate(validator);
 
                 if (!reporter.hasProblems()) {
                     validatedContents.put(id, origin);

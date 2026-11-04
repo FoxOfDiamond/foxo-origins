@@ -7,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import io.github.eggohito.kaya.context.Context;
@@ -19,7 +18,6 @@ import io.github.eggohito.kaya.util.MiscUtil;
 import io.github.eggohito.kaya.util.Reporter;
 import io.github.eggohito.kaya.util.ResourceLocationUtil;
 import io.github.eggohito.kaya.util.manager.AbstractContentAndTagManager;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -47,6 +45,7 @@ import syrena.foxo_origins.event.OriginLayerReloadEvents;
 import syrena.foxo_origins.network.packet.clientbound.ClientboundUpdateOriginLayersPacket;
 import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
 import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginHolder;
 import syrena.foxo_origins.origin.OriginManager;
 import syrena.foxo_origins.registry.FoxoOriginsRegistry;
 
@@ -55,19 +54,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-public class ServerOriginLayerManager extends AbstractContentAndTagManager<ResourceLocation, OriginLayer> implements OriginLayerManager, IdentifiableResourceReloadListener {
+public class ServerOriginLayerManager extends AbstractContentAndTagManager<ResourceLocation, OriginLayerHolder> implements OriginLayerManager, IdentifiableResourceReloadListener {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Supplier<ImmutableSet<ResourceLocation>> DEPENDENCIES = Suppliers.memoize(() -> Util.make(ImmutableSet.builder(), DependencyManager.ORIGIN_LAYERS.invoker()::add).build());
 
     private final JsonFileToIdConverter contentLoader = new JsonFileToIdConverter(JsonFileToIdConverter.registry(FoxoOriginsRegistry.ORIGIN_LAYER).directory(), EnumSet.allOf(JsonFormat.class));
-    private final TagLoader<OriginLayer> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN_LAYER));
+    private final TagLoader<OriginLayerHolder> tagLoader = new TagLoader<>((id, required) -> this.getAsResult(id).result(), Registries.tagsDirPath(FoxoOriginsRegistry.ORIGIN_LAYER));
 
     private volatile Map<ResourceLocation, List<TagLoader.EntryWithSource>> pendingTags = Map.of();
     private volatile DynamicOps<JsonElement> ops = JsonOps.INSTANCE;
 
-    private List<ResourceLocation> cachedKeys = null;
-    private List<OriginLayer> cachedValues = null;
 
     @Override
     public ResourceLocation getFabricId() {
@@ -95,7 +92,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         OriginLayerReloadEvents.BEFORE.invoker().beforeReload(manager, profiler);
         LOGGER.info("Parsing origin layers from data packs...");
 
-        ImmutableMap.Builder<ResourceLocation, OriginLayer> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, OriginLayerHolder> builder = ImmutableMap.builder();
         this.contents = ImmutableMap.of();
 
         pendingOriginLayers.forEach((id, jsonWithSource) -> {
@@ -105,11 +102,11 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
             ResourceLocationUtil.setCurrent(id);
 
             MiscUtil.handleResult(
-                    OriginLayer.CODEC.parse(ops, jsonWithSource.json()),
+                    OriginLayerHolder.CODEC.parse(ops, jsonWithSource.json()),
                     layer -> builder.put(id,layer),
                     (thingy) -> true,
-                    warning -> LOGGER.warn("Found warning(s) while parsing origin layer {} from data pack [{}]: {}", id.toString(), jsonWithSource.source(), warning),
-                    error -> LOGGER.error("Error trying to parse origin layer {} from data pack [{}] (skipping): {}", id.toString(), jsonWithSource.source(), error)
+                    warning -> LOGGER.warn("Found warning(s) while parsing origin origin {} from data pack [{}]: {}", id.toString(), jsonWithSource.source(), warning),
+                    error -> LOGGER.error("Error trying to parse origin origin {} from data pack [{}] (skipping): {}", id.toString(), jsonWithSource.source(), error)
             );
 
             ResourceLocationUtil.setCurrent(null);
@@ -120,8 +117,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         this.pendingTags = pendingTags;
 
         OriginLayerReloadEvents.AFTER.invoker().afterReload(manager, profiler);
-        LOGGER.info("Finished parsing origin layer from data packs. Parsed {} origin layer(s)", contents.size());
-        cacheData();
+        LOGGER.info("Finished parsing origin origin from data packs. Parsed {} origin origin(s)", contents.size());
     }
     private ServerOriginLayerManager withOps(@NotNull HolderLookup.Provider provider) {
         this.ops = provider.createSerializationContext(JsonOps.INSTANCE);
@@ -152,9 +148,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
 
         ReloadableServerResourcesEvents.TAGS_UPDATED.addPhaseOrdering(OriginManager.ID, ID);
         ReloadableServerResourcesEvents.TAGS_UPDATED.register(ID, this::finalize);
-        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((_,_)->{
-            clearData();
-        });
+
 
         ServerPlayNetworking.registerGlobalReceiver(ServerboundSelectOriginPacket.TYPE, this::receive);
     }
@@ -163,23 +157,24 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         ServerPlayer player = context.player();
         ServerLevel level = player.serverLevel();
 
-        Origin origin;
-        OriginLayer layer = OriginLayerManager.getInstance().get(payload.layer());
+        OriginHolder origin;
+        OriginLayerHolder layer = OriginLayerManager.getInstance().get(payload.layer());
 
         if (payload.origin().isEmpty()){
             Context thisContext = syrena.foxo_origins.util.MiscUtil.thisContext(player,level);
-            if (!layer.allowsRandom(thisContext)) return;
-            List<Origin> eligibleOrigins = new ArrayList<>();
-            layer.origins().elements().forEach(entry -> {
-                if (entry.allowsRandom(thisContext)) eligibleOrigins.add(entry);
+            if (!layer.layer().allowsRandom(thisContext)) return;
+            List<OriginHolder> eligibleOrigins = new ArrayList<>();
+            layer.layer().origins().elements().forEach(entry -> {
+                if (entry.origin().allowsRandom(thisContext)) eligibleOrigins.add(entry);
             });
             if (eligibleOrigins.isEmpty()) return;
             origin = eligibleOrigins.get(level.random.nextInt(eligibleOrigins.size()));
         } else {
             origin = OriginManager.getInstance().get(payload.origin().get());
         }
-        Map<OriginLayer,Origin> attachment = player.getAttachedOrSet(FoxoOriginsRegistry.ORIGIN_ATTACHMENT,ImmutableMap.of());
-        HashMap<OriginLayer,Origin> mutableAttachment = new HashMap<>(attachment);
+        Map<OriginLayerHolder,OriginHolder> attachment = player.getAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT);
+        HashMap<OriginLayerHolder,OriginHolder> mutableAttachment = new HashMap<>(attachment);
+        FoxoOrigins.LOGGER.info("Recieved select packet");
         FoxoOrigins.LOGGER.info(payload.layer().toString());
         FoxoOrigins.LOGGER.info(layer.toString());
         if (attachment.get(layer) != null && attachment.get(layer).equals(origin)) return;
@@ -188,38 +183,12 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         player.setAttached(FoxoOriginsRegistry.ORIGIN_ATTACHMENT, ImmutableMap.copyOf(mutableAttachment));
     }
 
-    public DataResult<ResourceLocation> getKeyAsResult(OriginLayer originLayer) {
-        //FoxoOrigins.LOGGER.info(String.valueOf(size()));
-        if (size() == 0 && cachedValues != null && cachedKeys != null){
-            FoxoOrigins.LOGGER.info("No registered layers found, falling back on cache...");
-            for (int i=0;i  < cachedKeys.size();i++) {
-                //FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
-                //FoxoOrigins.LOGGER.info(originLayer.name().toString());
-                if (cachedValues.get(i) == originLayer) {
-                    //FoxoOrigins.LOGGER.info("Equal");
-                    return DataResult.success(cachedKeys.get(i));
-                }
-            }
-        } else {
-            List<OriginLayer> values = new ObjectArrayList<>(values().iterator());
-            List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
-            for (int i = 0; i < size(); i++) {
-                //FoxoOrigins.LOGGER.info(cachedValues.get(i).name().toString());
-                //FoxoOrigins.LOGGER.info(originLayer.name().toString());
-                if (values.get(i) == originLayer) {
-                    //FoxoOrigins.LOGGER.info("Equal");
-                    return DataResult.success(keys.get(i));
-                }
-            }
-        }
-        return DataResult.error(() -> "Unregistered origin layer: " + originLayer.name());
-    }
     private void finalize(ReloadableServerResources resources) {
 
         int prevSize = contents.size();
-        ImmutableMap.Builder<ResourceLocation, OriginLayer> validatedContents = ImmutableMap.builder();
+        ImmutableMap.Builder<ResourceLocation, OriginLayerHolder> validatedContents = ImmutableMap.builder();
 
-        LOGGER.info("Validating {} origin layer(s)...", prevSize);
+        LOGGER.info("Validating {} origin origin(s)...", prevSize);
 
 
         for (var layer : contents.values()) {
@@ -228,7 +197,7 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
 
                 ContextValidator validator = new ContextValidator(OriginLayer.PARAMETERS, reporter, MiscUtil.getRegistries(resources));
 
-                layer.validate(validator);
+                layer.layer().validate(validator);
 
                 if (!reporter.hasProblems()) {
                     validatedContents.put(id, layer);
@@ -247,16 +216,5 @@ public class ServerOriginLayerManager extends AbstractContentAndTagManager<Resou
         LOGGER.info("Finished parsing origin layer tags from data packs. Origin layer manager contains {} origin layer tag(s)", tags.size());
         this.pendingTags = Map.of();
 
-    }
-
-    private void cacheData(){
-        cachedKeys = new ObjectArrayList<>(keys().iterator());
-        cachedValues = new ObjectArrayList<>(values().iterator());
-        FoxoOrigins.LOGGER.info("Cached origin layer data.");
-    }
-    private void clearData(){
-        cachedKeys = null;
-        cachedValues = null;
-        FoxoOrigins.LOGGER.info("Cleared origin layer cache data.");
     }
 }

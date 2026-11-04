@@ -17,7 +17,7 @@ import syrena.foxo_origins.client.screen.FoxoOriginsDisplayScreen;
 import syrena.foxo_origins.client.screen.OriginsSelectScreen;
 import syrena.foxo_origins.client.util.MiscUtilClient;
 import syrena.foxo_origins.network.packet.serverbound.ServerboundSelectOriginPacket;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class FoxoOriginsOriginLayerSelectionListEntry extends FoxoOriginsListEnt
     int BUTTON_SIZE = FoxoOriginsDisplayScreen.ENTRY_ICON_BUTTON_SIZE;
     boolean allowRandom;
     boolean requiresAction;
-    public FoxoOriginsOriginLayerSelectionListEntry(OriginLayer layer, boolean requiresAction, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
+    public FoxoOriginsOriginLayerSelectionListEntry(OriginLayerHolder layer, boolean requiresAction, boolean allowRandom, Font font, Component title, Component shortDescription, Component description, Either<ResourceLocation, ItemStack> icon, int impact, int order) {
         super(font, title, shortDescription, description, icon, impact, order);
         this.allowRandom = allowRandom;
         this.requiresAction = requiresAction;
@@ -44,10 +44,10 @@ public class FoxoOriginsOriginLayerSelectionListEntry extends FoxoOriginsListEnt
                 ClientPlayNetworking.send(new ServerboundSelectOriginPacket(OriginLayerManager.getInstance().getKey(layer), Optional.empty()));
             }),true).size(BUTTON_SIZE,BUTTON_SIZE).sprite(FoxoOriginsDisplayScreen.ENTRY_RANDOMIZE_BUTTON_LOCATION,BUTTON_SIZE,BUTTON_SIZE).build();
             MutableComponent tooltip = Component.translatable("gui.foxo-origins.choose_origin.randomize_layer.tooltip");
-            layer.origins().elements().forEach(origin -> {
-                if (origin.allowsRandom(MiscUtilClient.thisContext(Minecraft.getInstance()))){
+            layer.layer().origins().elements().forEach(origin -> {
+                if (origin.origin().allowsRandom(MiscUtilClient.thisContext(Minecraft.getInstance()))){
                     tooltip.append(CommonComponents.NEW_LINE);
-                    tooltip.append(origin.name());
+                    tooltip.append(origin.origin().name());
                 }
             });
             this.randomizeButton.setTooltip(Tooltip.create(tooltip));

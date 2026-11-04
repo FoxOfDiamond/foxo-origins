@@ -11,7 +11,7 @@ import syrena.foxo_origins.FoxoOrigins;
 import java.util.Optional;
 
 public record ServerboundSelectOriginPacket(ResourceLocation layer, Optional<ResourceLocation> origin) implements CustomPacketPayload {
-    // 0: randomize layer
+    // 0: randomize origin
     // 1: select origin
     public static final Type<ServerboundSelectOriginPacket> TYPE = new Type<>(FoxoOrigins.id("gui_handler/").withPath(path -> "serverbound/" + path + "/select"));
     public static final StreamCodec<ByteBuf, ServerboundSelectOriginPacket> CODEC = StreamCodec.composite(

@@ -4,33 +4,29 @@ import com.mojang.serialization.DataResult;
 import io.github.eggohito.kaya.util.manager.ContentAndTagManager;
 import io.github.eggohito.kaya.util.manager.KayaManagers;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagEntry;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import syrena.foxo_origins.FoxoOrigins;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface OriginManager extends ContentAndTagManager<ResourceLocation, Origin> {
+public interface OriginManager extends ContentAndTagManager<ResourceLocation, OriginHolder> {
     ResourceLocation ID = FoxoOrigins.id("manager/origin");
     Supplier<OriginManager> DEFERRED_INSTANCE = KayaManagers.deferredPhysicalSideSpecific(OriginManager.class, ServerOriginManager::new);
 
-    TagEntry.Lookup<Origin> TAG_LOOKUP = new TagEntry.Lookup<>() {
+    TagEntry.Lookup<OriginHolder> TAG_LOOKUP = new TagEntry.Lookup<>() {
 
         @Override
-        public @Nullable Origin element(ResourceLocation id, boolean required) {
+        public @Nullable OriginHolder element(ResourceLocation id, boolean required) {
             return getInstance().getAsResult(id).result().orElse(null);
         }
 
         @Override
-        public @Nullable Collection<Origin> tag(ResourceLocation id) {
+        public @Nullable Collection<OriginHolder> tag(ResourceLocation id) {
             return getInstance().getTagAsResult(id).result().orElse(null);
         }
 
@@ -42,18 +38,18 @@ public interface OriginManager extends ContentAndTagManager<ResourceLocation, Or
     };
 
     @Override
-    default DataResult<Origin> getAsResult(ResourceLocation key) {
+    default DataResult<OriginHolder> getAsResult(ResourceLocation key) {
         return this.getAsResult(key, k -> "Unknown " + k.toString());
     }
 
 
     @Override
-    default DataResult<List<Origin>> getTagAsResult(ResourceLocation id) {
+    default DataResult<List<OriginHolder>> getTagAsResult(ResourceLocation id) {
         return this.getTagAsResult(id, i -> "Unknown origin tag: \"" + i + "\"");
     }
 
-    default DataResult<ResourceLocation> getKeyAsResult(Origin origin) {
-        List<Origin> values = new ObjectArrayList<>(values().iterator());
+    default DataResult<ResourceLocation> getKeyAsResult(OriginHolder origin) {
+        List<OriginHolder> values = new ObjectArrayList<>(values().iterator());
         List<ResourceLocation> keys = new ObjectArrayList<>(keys().iterator());
         for (int i=0;i<size();i++) {
 
@@ -63,11 +59,11 @@ public interface OriginManager extends ContentAndTagManager<ResourceLocation, Or
 
         }
 
-        return DataResult.error(() -> "Unregistered origin: " + origin.name());
+        return DataResult.error(() -> "Unregistered origin: " + origin.origin().name());
 
     }
 
-    default ResourceLocation getKey(Origin origin) {
+    default ResourceLocation getKey(OriginHolder origin) {
         return this.getKeyAsResult(origin).getOrThrow();
     }
 

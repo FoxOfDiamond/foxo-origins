@@ -26,7 +26,7 @@ import syrena.foxo_origins.util.MiscUtil;
 import java.util.Optional;
 
 
-public record Origin(Component name, Component description, Component shortDescription, Optional<Either<ResourceLocation,ItemStack>> icon, int order, int impact, TagLike<PowerHolder<?>> powers, BooleanProvider visible, BooleanProvider choosable, BooleanProvider allowRandom, int loading_priority) implements ContextValidatable {
+public record Origin(Component name, Component description, Component shortDescription, Optional<Either<ResourceLocation,ItemStack>> icon, int order, int impact, TagLike<PowerHolder<?>> powers, BooleanProvider visible, BooleanProvider choosable, BooleanProvider allowRandom, int loadingPriority) implements ContextValidatable {
     static ContextValidator.Parameters PARAMETERS = new ContextValidator.Parameters.Builder()
             .required(KayaContextParameters.THIS_ENTITY)
             .build();
@@ -42,7 +42,7 @@ public record Origin(Component name, Component description, Component shortDescr
                             BooleanProvider.CODEC.optionalFieldOf("visible",new ConstantBooleanProvider(true)).forGetter(Origin::visible),
                             BooleanProvider.CODEC.optionalFieldOf("choosable",new ConstantBooleanProvider(true)).forGetter(Origin::choosable),
                             BooleanProvider.CODEC.optionalFieldOf("allow_random",new ConstantBooleanProvider(true)).forGetter(Origin::allowRandom),
-                            Codec.INT.optionalFieldOf("loading_priority",0).forGetter(Origin::loading_priority))
+                            Codec.INT.optionalFieldOf("loading_priority",0).forGetter(Origin::loadingPriority))
                     .apply(instance,Origin::new)
     );
 
@@ -59,7 +59,7 @@ public record Origin(Component name, Component description, Component shortDescr
             BooleanProvider.STREAM_CODEC,Origin::visible,
             BooleanProvider.STREAM_CODEC,Origin::choosable,
             BooleanProvider.STREAM_CODEC,Origin::allowRandom,
-            ByteBufCodecs.INT,Origin::loading_priority,
+            ByteBufCodecs.INT,Origin::loadingPriority,
             Origin::new
     );
 

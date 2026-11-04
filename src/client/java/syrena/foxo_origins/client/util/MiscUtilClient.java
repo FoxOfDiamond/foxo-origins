@@ -7,18 +7,18 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import syrena.foxo_origins.attachment.entity.FoxoOriginsAttachment;
 import syrena.foxo_origins.client.FoxoOriginsClient;
-import syrena.foxo_origins.origin.Origin;
+import syrena.foxo_origins.origin.OriginHolder;
 import syrena.foxo_origins.origin.OriginManager;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 import syrena.foxo_origins.util.MiscUtil;
 
 import java.util.Map;
 
 public class MiscUtilClient {
-    public static boolean checkIfSelectionFinished(Map<OriginLayer, Origin> attachment){
+    public static boolean checkIfSelectionFinished(Map<OriginLayerHolder, OriginHolder> attachment){
         if (attachment == null) return false;
-        for (OriginLayer layer: OriginLayerManager.getInstance().values()){
+        for (OriginLayerHolder layer: OriginLayerManager.getInstance().values()){
             if (layerIsPlaceholder(attachment, layer)){
                 FoxoOriginsClient.LOGGER.info("Iz placholds");
                 return false;
@@ -27,8 +27,8 @@ public class MiscUtilClient {
         FoxoOriginsClient.LOGGER.info("Yay!");
         return true;
     }
-    public static boolean layerIsPlaceholder(Map<OriginLayer, Origin> attachment, OriginLayer layer){
-        return attachment == null ||!attachment.containsKey(layer) || (attachment.get(layer) == layer.placeholderOrigin().orElse(OriginManager.getInstance().get(FoxoOriginsAttachment.DEFAULT_PLACEHOLDER)) && !layer.origins().elements().isEmpty());
+    public static boolean layerIsPlaceholder(Map<OriginLayerHolder, OriginHolder> attachment, OriginLayerHolder layer){
+        return attachment == null ||!attachment.containsKey(layer) || (attachment.get(layer) == layer.layer().placeholderOrigin().orElse(OriginManager.getInstance().get(FoxoOriginsAttachment.DEFAULT_PLACEHOLDER)) && !layer.layer().origins().elements().isEmpty());
     }
     public static Context thisContext(Minecraft minecraft){
         return MiscUtil.thisContext(minecraft.player,minecraft.level);

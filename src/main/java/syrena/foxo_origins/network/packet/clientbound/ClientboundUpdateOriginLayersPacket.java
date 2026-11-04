@@ -9,14 +9,14 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import syrena.foxo_origins.FoxoOrigins;
-import syrena.foxo_origins.origin_layer.OriginLayer;
+import syrena.foxo_origins.origin_layer.OriginLayerHolder;
 import syrena.foxo_origins.origin_layer.OriginLayerManager;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLayer> originLayers, Map<ResourceLocation, List<OriginLayer>> tags) implements CustomPacketPayload {
+public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLayerHolder> originLayers, Map<ResourceLocation, List<OriginLayerHolder>> tags) implements CustomPacketPayload {
 
     public static final Type<ClientboundUpdateOriginLayersPacket> TYPE = new Type<>(OriginLayerManager.ID.withPath(path -> "clientbound/" + path + "/update"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateOriginLayersPacket> CODEC = StreamCodec.ofMember(ClientboundUpdateOriginLayersPacket::send, ClientboundUpdateOriginLayersPacket::receive);
@@ -28,7 +28,7 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
 
     private static ClientboundUpdateOriginLayersPacket receive(RegistryFriendlyByteBuf buf) {
 
-        Map<ResourceLocation, OriginLayer> originLayers = new Object2ObjectLinkedOpenHashMap<>();
+        Map<ResourceLocation, OriginLayerHolder> originLayers = new Object2ObjectLinkedOpenHashMap<>();
         int originLayersCount = buf.readInt();
 
         for (int i = 0; i < originLayersCount; i++) {
@@ -36,17 +36,17 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
             ResourceLocation id = ResourceLocation.STREAM_CODEC.decode(buf);
 
             try {
-                originLayers.put(id,OriginLayer.STREAM_CODEC.decode(buf));
+                originLayers.put(id,OriginLayerHolder.STREAM_CODEC.decode(buf));
             }
 
             catch (Exception e) {
-                FoxoOrigins.LOGGER.error("Couldn't decode origin layer {} during the syncing process", id.toString(), e);
+                FoxoOrigins.LOGGER.error("Couldn't decode origin origin {} during the syncing process", id.toString(), e);
                 throw e;
             }
 
         }
 
-        Map<ResourceLocation, List<OriginLayer>> tags = new Object2ObjectLinkedOpenHashMap<>();
+        Map<ResourceLocation, List<OriginLayerHolder>> tags = new Object2ObjectLinkedOpenHashMap<>();
         int tagsCount = buf.readInt();
 
         for (int i = 0; i < tagsCount; i++) {
@@ -59,7 +59,7 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
                 try {
 
                     ResourceLocation holderId = ResourceLocation.STREAM_CODEC.decode(buf);
-                    OriginLayer holder = Objects.requireNonNull(originLayers.get(holderId), "Unknown origin layer" + holderId.toString());
+                    OriginLayerHolder holder = Objects.requireNonNull(originLayers.get(holderId), "Unknown origin origin" + holderId.toString());
 
                     tags
                             .computeIfAbsent(id, k -> new ObjectArrayList<>())
@@ -68,7 +68,7 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
                 }
 
                 catch (Exception e) {
-                    FoxoOrigins.LOGGER.error("Couldn't decode origin layer tag \"{}\" during the syncing process", id, e);
+                    FoxoOrigins.LOGGER.error("Couldn't decode origin origin tag \"{}\" during the syncing process", id, e);
                     throw e;
                 }
 
@@ -82,7 +82,7 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
 
     private void send(RegistryFriendlyByteBuf buf) {
 
-        Map<ResourceLocation, OriginLayer> filtered = new Object2ObjectLinkedOpenHashMap<>(originLayers());
+        Map<ResourceLocation, OriginLayerHolder> filtered = new Object2ObjectLinkedOpenHashMap<>(originLayers());
 
         buf.writeInt(filtered.size());
 
@@ -92,11 +92,11 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
             ResourceLocation.STREAM_CODEC.encode(buf, id);
 
             try {
-                OriginLayer.STREAM_CODEC.encode(buf, originLayerEntry.getValue());
+                OriginLayerHolder.STREAM_CODEC.encode(buf, originLayerEntry.getValue());
             }
 
             catch (Exception e) {
-                FoxoOrigins.LOGGER.error("Couldn't encode origin layer {} during the syncing process", id.toString(), e);
+                FoxoOrigins.LOGGER.error("Couldn't encode origin origin {} during the syncing process", id.toString(), e);
                 throw e;
             }
 
@@ -109,7 +109,7 @@ public record ClientboundUpdateOriginLayersPacket(Map<ResourceLocation, OriginLa
             ResourceLocation id = tagEntry.getKey();
             ResourceLocation.STREAM_CODEC.encode(buf, id);
 
-            List<OriginLayer> holders = tagEntry.getValue();
+            List<OriginLayerHolder> holders = tagEntry.getValue();
             buf.writeInt(holders.size());
 
             for (var holder : holders) {
